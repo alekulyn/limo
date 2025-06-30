@@ -80,16 +80,16 @@ void Deployer::unDeploy(std::optional<ProgressNode*> progress_node)
   deploy({}, progress_node);
 }
 
-void Deployer::setLoadorder(const std::vector<DeployerEntry *>& loadorder)
+void Deployer::setLoadorder(const TreeItem<DeployerEntry>& loadorder)
 {
   loadorders_[current_profile_] = loadorder;
 }
 
-std::vector<DeployerEntry *> Deployer::getLoadorder() const
+TreeItem<DeployerEntry> Deployer::getLoadorder() const
 {
   if(loadorders_.empty() || current_profile_ < 0 || current_profile_ >= loadorders_.size() ||
      loadorders_[current_profile_].empty())
-    return std::vector<DeployerEntry *>{};
+    return TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
   return loadorders_[current_profile_];
 }
 
@@ -132,10 +132,10 @@ bool Deployer::removeMod(int mod_id)
 {
   auto iter = std::find_if(loadorders_[current_profile_].begin(),
                            loadorders_[current_profile_].end(),
-                           [mod_id](auto elem) { return elem->id == mod_id; });
+                           [mod_id](auto entry) { return entry->id == mod_id; });
   if(iter == loadorders_[current_profile_].end())
     return false;
-  loadorders_[current_profile_].erase(iter);
+  loadorders_[current_profile_].erase(*iter);
   if(auto_update_conflict_groups_)
     updateConflictGroups();
   return true;
@@ -147,13 +147,13 @@ void Deployer::setModStatus(int mod_id, bool status)
     return;
   auto iter = std::find_if(loadorders_[current_profile_].begin(),
                            loadorders_[current_profile_].end(),
-                           [mod_id](const auto& t) { return t->id == mod_id; });
+                           [mod_id](const auto& entry) { return entry->id == mod_id; });
   auto deployer_mod = static_cast<DeployerModInfo *>(*iter);
   deployer_mod->enabled = status;
   return;
 }
 
-bool Deployer::hasMod(int mod_id) const
+bool Deployer::hasMod(int mod_id)
 {
   return std::find_if(loadorders_[current_profile_].begin(),
                       loadorders_[current_profile_].end(),
@@ -164,7 +164,7 @@ bool Deployer::hasMod(int mod_id) const
 std::vector<ConflictInfo> Deployer::getFileConflicts(
   int mod_id,
   bool show_disabled,
-  std::optional<ProgressNode*> progress_node) const
+  std::optional<ProgressNode*> progress_node)
 {
   std::vector<ConflictInfo> conflicts;
   if(!checkModPathExistsAndMaybeLogError(mod_id))
@@ -204,7 +204,7 @@ std::vector<ConflictInfo> Deployer::getFileConflicts(
   return conflicts;
 }
 
-int Deployer::getNumMods() const
+int Deployer::getNumMods()
 {
   return loadorders_[current_profile_].size();
 }
@@ -226,9 +226,10 @@ std::unordered_set<int> Deployer::getModConflicts(int mod_id,
   std::vector<std::string> mod_files = getModFiles(mod_id, false);
   if(!checkModPathExistsAndMaybeLogError(mod_id))
     return conflicts;
+  auto what = loadorders_[current_profile_];
   if(progress_node)
     (*progress_node)->setTotalSteps(loadorders_[current_profile_].size());
-  for(const auto& entry : loadorders_[current_profile_])
+  for(const auto &entry : loadorders_[current_profile_])
   {
     if(entry->isSeparator || !checkModPathExistsAndMaybeLogError(static_cast<DeployerModInfo *>(entry)->id))
       continue;
@@ -250,7 +251,8 @@ void Deployer::addProfile(int source)
 {
   if(source < 0 || source >= loadorders_.size())
   {
-    loadorders_.push_back(std::vector<DeployerEntry *>{});
+    auto root = TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+    loadorders_.push_back(root);
     conflict_groups_.push_back(std::vector<std::vector<int>>{});
   }
   else
@@ -358,7 +360,7 @@ bool Deployer::swapMod(int old_id, int new_id)
 {
   auto iter = std::find_if(loadorders_[current_profile_].begin(),
                            loadorders_[current_profile_].end(),
-                           [old_id](auto elem) { return elem->id == old_id; });
+                           [old_id](auto entry) { return entry->id == old_id; });
   if(iter == loadorders_[current_profile_].end() || (*iter)->id == new_id)
     return false;
   (*iter)->id = new_id;
@@ -370,16 +372,16 @@ bool Deployer::swapMod(int old_id, int new_id)
 void Deployer::sortModsByConflicts(std::optional<ProgressNode*> progress_node)
 {
   updateConflictGroups(progress_node);
-  std::vector<DeployerEntry *> new_loadorder;
-  new_loadorder.reserve(loadorders_[current_profile_].size());
+  auto new_loadorder = TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  // new_loadorder.reserve(loadorders_[current_profile_].size());
   int i = 0;
   for(const auto& group : conflict_groups_[current_profile_])
   {
     for(int mod_id : group)
     {
       auto entry = str::find_if(loadorders_[current_profile_],
-                                [mod_id](auto t) { return t->id == mod_id; });
-      new_loadorder.push_back(*entry);
+                                [mod_id](auto entry) { return entry->id == mod_id; });
+      new_loadorder.emplace_back(*entry);
     }
     i++;
   }
@@ -740,7 +742,7 @@ void Deployer::setAutoUpdateConflictGroups(bool status)
 std::optional<bool> Deployer::getModStatus(int mod_id)
 {
   auto iter = str::find_if(loadorders_[current_profile_],
-                           [mod_id](auto t) { return t->id == mod_id; });
+                           [mod_id](auto entry) { return entry->id == mod_id; });
   if(iter == loadorders_[current_profile_].end())
     return {};
   return { static_cast<DeployerModInfo *>(*iter)->enabled };
@@ -935,7 +937,7 @@ std::vector<std::pair<std::string, std::string>> Deployer::getModActions() const
   return {};
 }
 
-std::vector<std::vector<int>> Deployer::getValidModActions() const
+std::vector<std::vector<int>> Deployer::getValidModActions()
 {
   std::vector<std::vector<int>> valid_actions;
   for(int _ = 0; _ < loadorders_[current_profile_].size(); _++)

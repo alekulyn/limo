@@ -162,15 +162,15 @@ void PluginDeployer::setConflictGroups(const std::vector<std::vector<int>>& newC
          "This will have no effect.");
 }
 
-int PluginDeployer::getNumMods() const
+int PluginDeployer::getNumMods()
 {
   return plugins_.size();
 }
 
-std::vector<DeployerEntry *> PluginDeployer::getLoadorder() const
+TreeItem<DeployerEntry> PluginDeployer::getLoadorder() const
 {
-  std::vector<DeployerEntry *> loadorder;
-  loadorder.reserve(plugins_.size());
+  TreeItem<DeployerEntry> loadorder = TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  // loadorder.reserve(plugins_.size());
   for(const auto& [plugin, enabled] : plugins_)
   {
     auto iter = source_mods_.find(plugin);
@@ -198,7 +198,7 @@ bool PluginDeployer::removeMod(int mod_id)
   return false;
 }
 
-bool PluginDeployer::hasMod(int mod_id) const
+bool PluginDeployer::hasMod(int mod_id)
 {
   return false;
 }
@@ -214,7 +214,7 @@ bool PluginDeployer::swapMod(int old_id, int new_id)
 std::vector<ConflictInfo> PluginDeployer::getFileConflicts(
   int mod_id,
   bool show_disabled,
-  std::optional<ProgressNode*> progress_node) const
+  std::optional<ProgressNode*> progress_node)
 {
   if(progress_node)
   {
@@ -317,7 +317,7 @@ bool PluginDeployer::idsAreSourceReferences() const
   return true;
 }
 
-std::vector<std::vector<int>> PluginDeployer::getValidModActions() const
+std::vector<std::vector<int>> PluginDeployer::getValidModActions()
 {
   std::vector<std::vector<int>> valid_actions;
   for(int _ = 0; _ < plugins_.size(); _++)

@@ -103,7 +103,7 @@ std::vector<std::pair<std::string, std::string>> OpenMwPluginDeployer::getModAct
   return { { "Add Groundcover Tag", "tag-new" }, { "Remove Groundcover Tag", "tag-delete" } };
 }
 
-std::vector<std::vector<int>> OpenMwPluginDeployer::getValidModActions() const
+std::vector<std::vector<int>> OpenMwPluginDeployer::getValidModActions()
 {
   std::vector<std::vector<int>> valid_actions;
   for(const auto& [plugin, enabled] : plugins_)

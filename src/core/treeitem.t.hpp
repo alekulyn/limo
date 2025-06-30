@@ -7,37 +7,33 @@
     A container for items of data supplied by the simple tree model.
 */
 
+#ifndef TREEITEM_T_H
+#define TREEITEM_T_H
+
 #include "core/deployerentry.hpp"
 #include "treeitem.h"
 #include <utility>
 
-//! [0]
 template <typename T>
 TreeItem<T>::TreeItem(T *data, TreeItem *parent)
     : itemData(std::move(data)), m_parentItem(parent)
 {
   m_childItems = std::vector<TreeItem *>();
 }
-//! [0]
 
-//! [1]
 template <typename T>
 TreeItem<T> *TreeItem<T>::child(int number)
 {
     return (number >= 0 && number < childCount())
         ? m_childItems.at(number) : nullptr;
 }
-//! [1]
 
-//! [2]
 template <typename T>
 int TreeItem<T>::childCount() const
 {
     return int(m_childItems.size());
 }
-//! [2]
 
-//! [3]
 template <typename T>
 int TreeItem<T>::row() const
 {
@@ -52,56 +48,19 @@ int TreeItem<T>::row() const
         return std::distance(m_parentItem->m_childItems.cbegin(), it);
     return -1;
 }
-//! [3]
 
-//! [5]
 template <typename T>
 T *TreeItem<T>::data() const
 {
     return itemData;
 }
-//! [5]
 
-//! [6]
-// template <typename T>
-// bool TreeItem<T>::insertChildren(int position, int count, int columns)
-// {
-//     if (position < 0 || position > m_childItems.size())
-//         return false;
-//
-//     for (int row = 0; row < count; ++row) {
-//         std::vector<T> data(columns);
-//         m_childItems.insert(m_childItems.cbegin() + position,
-//                 std::make_unique<TreeItem>(data, this));
-//     }
-//
-//     return true;
-// }
-//! [6]
-
-template <typename T>
-bool TreeItem<T>::appendChild(TreeItem *child)
-{
-  m_childItems.push_back(child);
-  return true;
-}
-
-template <typename T>
-bool TreeItem<T>::appendChild(T *data)
-{
-  m_childItems.push_back(new TreeItem<T>(data, this));
-  return true;
-}
-
-//! [8]
 template <typename T>
 TreeItem<T> *TreeItem<T>::parent()
 {
     return m_parentItem;
 }
-//! [8]
 
-//! [9]
 template <typename T>
 bool TreeItem<T>::removeChildren(int position, int count)
 {
@@ -113,15 +72,49 @@ bool TreeItem<T>::removeChildren(int position, int count)
 
     return true;
 }
-//! [9]
 
-//! [10]
 template <typename T>
 bool TreeItem<T>::setData(T *value)
 {
     itemData = value;
+    dirty = true;
     return true;
 }
-//! [10]
+
+template <typename T>
+std::vector<TreeItem<T> *> TreeItem<T>::preOrderTraversal()
+{
+    if (!dirty) {
+        return traversal;
+    }
+    std::vector<TreeItem<T> *> result = std::vector<TreeItem<T> *>();
+    if (itemData)
+        result.emplace_back(this);
+    for (const auto &child : m_childItems)
+    {
+        auto child_result = child->preOrderTraversal();
+        result.insert(result.end(), child_result.begin(), child_result.end());
+    }
+    traversal = result;
+    dirty = false;
+    return result;
+}
+
+template <typename T>
+void TreeItem<T>::emplace_back(TreeItem *data)
+{
+  m_childItems.emplace_back(data);
+  dirty = true;
+}
+
+template <typename T>
+void TreeItem<T>::emplace_back(T *data)
+{
+  m_childItems.emplace_back(new TreeItem<T>(data, this));
+  dirty = true;
+}
+
 
 template class TreeItem<DeployerEntry>;
+
+#endif

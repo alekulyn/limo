@@ -6,7 +6,6 @@
 
 #include <vector>
 
-//! [0]
 template <typename T>
 class TreeItem
 {
@@ -14,22 +13,55 @@ public:
     explicit TreeItem(T *data, TreeItem *parent = nullptr);
 
     TreeItem *child(int number); int childCount() const; T *data() const;
-    bool appendChild(TreeItem *child);
-    bool appendChild(T *data);
+    void emplace_back(TreeItem *data);
+    void emplace_back(T *data);
     TreeItem *parent();
     bool removeChildren(int position, int count);
     int row() const;
     bool setData(T *value);
+    T *getData() const { return itemData; }
+    std::vector<TreeItem<T> *> preOrderTraversal();
+    void refresh() {
+      traversal.clear();
+      traversalItems.clear();
+      preOrderTraversal();
+      for (auto &item : traversal) {
+        traversalItems.push_back(item->getData());
+      }
+    }
+    
+    std::vector<T *>::iterator begin() {
+      if (dirty) refresh();
+      return traversalItems.begin();
+    }
+    std::vector<T *>::iterator end() {
+      if (dirty) refresh();
+      return traversalItems.end();
+    }
+    int size() {
+      if (dirty) refresh();
+      return traversal.size();
+    }
+    bool empty() const { return m_childItems.empty(); }
+    void erase(T *item) {
+      if (dirty) preOrderTraversal();
+      auto found = std::ranges::find_if(traversal.begin(), traversal.end(), [item](TreeItem<T> *e) { return e->getData() == item; });
+    }
+    TreeItem *operator[](int i) {
+      if (dirty) refresh();
+      return m_childItems[i];
+    }
 
 private:
     std::vector<TreeItem<T> *> m_childItems;
     T *itemData;
     TreeItem *m_parentItem;
 
-    std::vector<T *> leaves;
+    bool dirty = true;
+    std::vector<TreeItem<T> *> traversal;
+    std::vector<T *> traversalItems;
     int rows = -1;
 };
-//! [0]
 
 #include "treeitem.t.hpp"
 #endif // TREEITEM_H

@@ -389,7 +389,7 @@ std::vector<ModInfo> ModdedApplication::getModInfo() const
   return mod_info;
 }
 
-std::vector<DeployerEntry *> ModdedApplication::getLoadorder(int deployer) const
+TreeItem<DeployerEntry> ModdedApplication::getLoadorder(int deployer) const
 {
   return deployers_[deployer]->getLoadorder();
 }
@@ -864,7 +864,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
     for(const auto& tag : manual_tags_)
       mods_per_tag[tag.getName()] = tag.getNumMods();
 
-    const auto loadorder = deployers_[deployer]->getLoadorder();
+    auto loadorder = deployers_[deployer]->getLoadorder();
     std::vector<std::string> mod_names;
     mod_names.reserve(loadorder.size());
     std::vector<std::vector<std::string>> manual_tags;
@@ -876,15 +876,15 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
       auto mod_info = static_cast<DeployerModInfo *>(entry);
       auto mod_name = std::ranges::find_if(installed_mods_, [&mod_info](auto& mod) { return mod.id == mod_info->id; })->name;
       auto item = new DeployerModInfo(false, mod_name, "", mod_info->id, mod_info->enabled);
-      root->appendChild(item);
+      root->emplace_back(item);
       mod_names.push_back(mod_name);
-      if(manual_tag_map_.contains(entry->id))
-        manual_tags.push_back(manual_tag_map_.at(entry->id));
+      if(manual_tag_map_.contains(mod_info->id))
+        manual_tags.push_back(manual_tag_map_.at(mod_info->id));
       else
         manual_tags.push_back({});
 
-      if(auto_tag_map_.contains(entry->id))
-        auto_tags.push_back(auto_tag_map_.at(entry->id));
+      if(auto_tag_map_.contains(mod_info->id))
+        auto_tags.push_back(auto_tag_map_.at(mod_info->id));
       else
         auto_tags.push_back({});
     }
@@ -920,7 +920,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
   }
   else
   {
-    const auto loadorder = deployers_[deployer]->getLoadorder();
+    auto loadorder = deployers_[deployer]->getLoadorder();
     std::vector<std::string> mod_names;
     if(deployers_[deployer]->idsAreSourceReferences())
     {
@@ -928,15 +928,15 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
       auto names = deployers_[deployer]->getModNames();
       for(int i = 0; i < loadorder.size(); i++)
       {
-        int id = loadorder[i]->id;
-        auto mod_info = static_cast<DeployerModInfo *>(loadorder[i]);
+        int id = loadorder[i]->getData()->id;
+        auto mod_info = static_cast<DeployerModInfo *>(loadorder[i]->getData());
         std::string mod_name;
         if(id == -1)
         {
           mod_name = "Vanilla";
           mod_names.push_back(mod_name);
           auto item = new DeployerModInfo(false, names[i], mod_name, mod_info->id, mod_info->enabled);
-          root->appendChild(item);
+          root->emplace_back(item);
           continue;
         }
         auto iter =
@@ -947,7 +947,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
           mod_name = iter->name;
         mod_names.push_back(mod_name);
         auto item = new DeployerModInfo(false, names[i], mod_name, mod_info->id, mod_info->enabled);
-        root->appendChild(item);
+        root->emplace_back(item);
       }
     }
     bool separate_dirs = false;

@@ -107,12 +107,12 @@ public:
    * \brief Returns the number of managed files.
    * \return The number of plugins.
    */
-  int getNumMods() const override;
+  int getNumMods() override;
   /*!
    * \brief Getter for the current plugin load order.
    * \return The load order.
    */
-  std::vector<DeployerEntry *> getLoadorder() const override;
+  TreeItem<DeployerEntry> getLoadorder() const override;
   /*!
    * \brief Does nothing since this deployer manages its own mods.
    * \param mod_id Ignored.
@@ -133,7 +133,7 @@ public:
    * \param mod_id Ignores
    * \return False.
    */
-  bool hasMod(int mod_id) const override;
+  bool hasMod(int mod_id) override;
   /*!
    * \brief Does nothing since this deployer manages its own mods.
    * \param old_id Ignored.
@@ -151,7 +151,7 @@ public:
   std::vector<ConflictInfo> getFileConflicts(
     int mod_id,
     bool show_disabled = false,
-    std::optional<ProgressNode*> progress_node = {}) const override;
+    std::optional<ProgressNode*> progress_node = {}) override;
   /*!
    * \brief Checks for conflicts with other mods.
    * Two mods are conflicting if they share at least one record.
@@ -285,7 +285,7 @@ public:
    * \brief Returns a vector containing valid mod actions.
    * \return For every mod: IDs of every valid mod_action which is valid for that mod.
    */
-  virtual std::vector<std::vector<int>> getValidModActions() const override;
+  virtual std::vector<std::vector<int>> getValidModActions() override;
 
 private:
   /*! \brief Name of the file containing paths of ignored files. */

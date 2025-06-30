@@ -249,7 +249,7 @@ void DeployerListModel::addSeparator()
 {
   emit layoutAboutToBeChanged();
   if (deployer_info_.supports_expandable) {
-    this->deployer_info_.root->appendChild(
+    this->deployer_info_.root->emplace_back(
       new DeployerEntry (true, "Separator")
     );
   }

@@ -144,7 +144,7 @@ public:
    * \param deployer The target Deployer.
    * \return The load order.
    */
-  std::vector<DeployerEntry *> getLoadorder(int deployer) const;
+  TreeItem<DeployerEntry> getLoadorder(int deployer) const;
   /*!
    * \brief Getter for the path to the staging directory. This is where all installed
    * mods are stored.

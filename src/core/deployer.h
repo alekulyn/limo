@@ -7,6 +7,7 @@
 
 #include "conflictinfo.h"
 #include "core/deployerentry.hpp"
+#include "core/treeitem.h"
 #include "filechangechoices.h"
 #include "log.h"
 #include "progressnode.h"
@@ -97,12 +98,12 @@ public:
    * \brief Setter for the load order used for deployment.
    * \param loadorder The new load order.
    */
-  void setLoadorder(const std::vector<DeployerEntry *>& loadorder);
+  void setLoadorder(const TreeItem<DeployerEntry>& loadorder);
   /*!
    * \brief Getter for the current mod load order.
    * \return The load order.
    */
-  virtual std::vector<DeployerEntry *> getLoadorder() const;
+  virtual TreeItem<DeployerEntry> getLoadorder() const;
   /*!
    * \brief Returns the type of this deployer, i.e. SIMPLEDEPLOYER
    * \return The type.
@@ -139,7 +140,7 @@ public:
    * \param mod_id Mod to be checked.
    * \return True is mod is in load order, else false.
    */
-  virtual bool hasMod(int mod_id) const;
+  virtual bool hasMod(int mod_id);
   /*!
    * \brief Checks for file conflicts of given mod with all other mods in the load order.
    * \param mod_id Mod to be checked.
@@ -150,12 +151,12 @@ public:
   virtual std::vector<ConflictInfo> getFileConflicts(
     int mod_id,
     bool show_disabled = false,
-    std::optional<ProgressNode*> progress_node = {}) const;
+    std::optional<ProgressNode*> progress_node = {});
   /*!
    * \brief Returns the number of mods in the load order.
    * \return The number of mods.
    */
-  virtual int getNumMods() const;
+  virtual int getNumMods();
   /*!
    * \brief Getter for path to deployment target directory.
    * \return The path.
@@ -366,7 +367,7 @@ public:
    * \brief Returns a vector containing valid mod actions.
    * \return For every mod: IDs of every valid mod_action which is valid for that mod.
    */
-  virtual std::vector<std::vector<int>> getValidModActions() const;
+  virtual std::vector<std::vector<int>> getValidModActions();
   /*!
    * \brief Applies the given mod action to the given mod.
    * \param action Action to be applied.
@@ -411,7 +412,7 @@ protected:
   /*! \brief The currently active profile. */
   int current_profile_ = 0;
   /*! \brief One load order per profile consisting of tuples of mod ids and their enabled status. */
-  std::vector<std::vector<DeployerEntry *>> loadorders_;
+  std::vector<TreeItem<DeployerEntry>> loadorders_;
   /*!
    * \brief For every profile: Groups of mods which conflict with each other. The last
    * group contains mods with no conflicts.

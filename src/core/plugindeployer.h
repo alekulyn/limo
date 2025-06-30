@@ -89,12 +89,12 @@ public:
    * \brief Returns the number of plugins on the load order.
    * \return The number of plugins.
    */
-  virtual int getNumMods() const override;
+  virtual int getNumMods() override;
   /*!
    * \brief Getter for the current plugin load order.
    * \return The load order.
    */
-  virtual std::vector<DeployerEntry *> getLoadorder() const override;
+  virtual TreeItem<DeployerEntry> getLoadorder() const override;
   /*!
    * \brief Does nothing since this deployer manages its own mods.
    * \param mod_id Ignored.
@@ -115,7 +115,7 @@ public:
    * \param mod_id Ignores
    * \return False.
    */
-  virtual bool hasMod(int mod_id) const override;
+  virtual bool hasMod(int mod_id) override;
   /*!
    * \brief Does nothing since this deployer manages its own mods.
    * \param old_id Ignored.
@@ -133,7 +133,7 @@ public:
   virtual std::vector<ConflictInfo> getFileConflicts(
     int mod_id,
     bool show_disabled = false,
-    std::optional<ProgressNode*> progress_node = {}) const override;
+    std::optional<ProgressNode*> progress_node = {}) override;
   /*!
    * \brief Not supported by this type.
    * \param mod_id The mod to be checked.
@@ -214,7 +214,7 @@ public:
    * \brief Returns a vector containing valid mod actions.
    * \return For every mod: IDs of every valid mod_action which is valid for that mod.
    */
-  virtual std::vector<std::vector<int>> getValidModActions() const override;
+  virtual std::vector<std::vector<int>> getValidModActions() override;
 
 protected:
   /*! \brief Appended to profile file names. */

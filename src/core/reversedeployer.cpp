@@ -190,15 +190,15 @@ void ReverseDeployer::setProfile(int profile)
 
 void ReverseDeployer::setConflictGroups(const std::vector<std::vector<int>>& newConflict_groups) {}
 
-int ReverseDeployer::getNumMods() const
+int ReverseDeployer::getNumMods()
 {
   return current_loadorder_.size();
 }
 
-std::vector<DeployerEntry *> ReverseDeployer::getLoadorder() const
+TreeItem<DeployerEntry> ReverseDeployer::getLoadorder() const
 {
-  std::vector<DeployerEntry *> loadorder;
-  loadorder.reserve(current_loadorder_.size());
+  TreeItem<DeployerEntry> loadorder = TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  // loadorder.reserve(current_loadorder_.size());
   for(const auto& [i, enabled] : str::enumerate_view(current_loadorder_ | std::views::values))
     loadorder.emplace_back(new DeployerModInfo(i, "", "", enabled));
   return loadorder;
@@ -226,7 +226,7 @@ bool ReverseDeployer::removeMod(int mod_id)
   return false;
 }
 
-bool ReverseDeployer::hasMod(int mod_id) const
+bool ReverseDeployer::hasMod(int mod_id)
 {
   return false;
 }
@@ -243,7 +243,7 @@ bool ReverseDeployer::swapMod(int old_id, int new_id)
 std::vector<ConflictInfo> ReverseDeployer::getFileConflicts(
   int mod_id,
   bool show_disabled,
-  std::optional<ProgressNode*> progress_node) const
+  std::optional<ProgressNode*> progress_node)
 {
   if(progress_node)
   {
@@ -574,7 +574,7 @@ void ReverseDeployer::addModToIgnoreList(int mod_id)
   writeManagedFiles();
 }
 
-std::vector<std::vector<int>> ReverseDeployer::getValidModActions() const
+std::vector<std::vector<int>> ReverseDeployer::getValidModActions()
 {
   std::vector<std::vector<int>> valid_actions;
   for(int _ = 0; _ < current_loadorder_.size(); _++)
