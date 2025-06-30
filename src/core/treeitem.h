@@ -39,8 +39,7 @@ public:
       return traversalItems.end();
     }
     int size() {
-      if (dirty) refresh();
-      return traversal.size();
+      return m_childItems.size();
     }
     bool empty() const { return m_childItems.empty(); }
     void erase(T *item) {
