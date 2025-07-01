@@ -195,12 +195,12 @@ int ReverseDeployer::getNumMods()
   return current_loadorder_.size();
 }
 
-TreeItem<DeployerEntry> ReverseDeployer::getLoadorder() const
+TreeItem<DeployerEntry> *ReverseDeployer::getLoadorder()
 {
-  TreeItem<DeployerEntry> loadorder = TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  TreeItem<DeployerEntry> *loadorder = new TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
   // loadorder.reserve(current_loadorder_.size());
   for(const auto& [i, enabled] : str::enumerate_view(current_loadorder_ | std::views::values))
-    loadorder.emplace_back(new DeployerModInfo(i, "", "", enabled));
+    loadorder->emplace_back(new DeployerModInfo(i, "", "", enabled));
   return loadorder;
 }
 

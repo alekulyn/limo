@@ -62,18 +62,6 @@ TreeItem<T> *TreeItem<T>::parent()
 }
 
 template <typename T>
-bool TreeItem<T>::removeChildren(int position, int count)
-{
-    if (position < 0 || position + count > m_childItems.size())
-        return false;
-
-    for (int row = 0; row < count; ++row)
-        m_childItems.erase(m_childItems.cbegin() + position);
-
-    return true;
-}
-
-template <typename T>
 bool TreeItem<T>::setData(T *value)
 {
     itemData = value;

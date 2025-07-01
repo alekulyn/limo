@@ -17,7 +17,6 @@ public:
     void emplace_back(TreeItem *data);
     void emplace_back(T *data);
     TreeItem *parent();
-    bool removeChildren(int position, int count);
     int row() const;
     bool setData(T *value);
     T *getData() const { return itemData; }
@@ -55,6 +54,20 @@ public:
     TreeItem<T> *back() {
       if (m_childItems.empty()) return nullptr;
       return m_childItems.back();
+    }
+    void rotate(int from, int to) {
+      if(to < from)
+      {
+        std::rotate(m_childItems.begin() + to,
+                    m_childItems.begin() + from,
+                    m_childItems.begin() + from + 1);
+      }
+      else
+      {
+        std::rotate(m_childItems.begin() + from,
+                    m_childItems.begin() + from + 1,
+                    m_childItems.begin() + to + 1);
+      }
     }
 
 private:

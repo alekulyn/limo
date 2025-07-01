@@ -94,7 +94,7 @@ public:
    * \brief Getter for the current plugin load order.
    * \return The load order.
    */
-  virtual TreeItem<DeployerEntry> getLoadorder() const override;
+  virtual TreeItem<DeployerEntry> *getLoadorder() override;
   /*!
    * \brief Does nothing since this deployer manages its own mods.
    * \param mod_id Ignored.

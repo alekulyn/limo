@@ -167,9 +167,9 @@ int PluginDeployer::getNumMods()
   return plugins_.size();
 }
 
-TreeItem<DeployerEntry> PluginDeployer::getLoadorder() const
+TreeItem<DeployerEntry> *PluginDeployer::getLoadorder()
 {
-  TreeItem<DeployerEntry> loadorder = TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  TreeItem<DeployerEntry> *loadorder = new TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
   // loadorder.reserve(plugins_.size());
   for(const auto& [plugin, enabled] : plugins_)
   {
@@ -177,7 +177,7 @@ TreeItem<DeployerEntry> PluginDeployer::getLoadorder() const
     int id = -1;
     if(iter != source_mods_.end())
       id = iter->second;
-    loadorder.emplace_back(new DeployerModInfo(false, plugin, "", id, enabled));
+    loadorder->emplace_back(new DeployerModInfo(false, plugin, "", id, enabled));
   }
   return loadorder;
 }

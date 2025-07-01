@@ -389,7 +389,7 @@ std::vector<ModInfo> ModdedApplication::getModInfo() const
   return mod_info;
 }
 
-TreeItem<DeployerEntry> ModdedApplication::getLoadorder(int deployer) const
+TreeItem<DeployerEntry> *ModdedApplication::getLoadorder(int deployer) const
 {
   return deployers_[deployer]->getLoadorder();
 }
@@ -680,7 +680,7 @@ void ModdedApplication::removeModFromGroup(int mod_id,
       for(int prof = 0; prof < profile_names_.size(); prof++)
       {
         deployers_[depl]->setProfile(prof);
-        auto loadorder = deployers_[depl]->getLoadorder();
+        auto loadorder = *deployers_[depl]->getLoadorder();
         auto iter = str::find_if(
           loadorder, [mod_id](const auto& entry) { return entry->id == mod_id; });
         if(iter != loadorder.end())
@@ -866,18 +866,17 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
 
     auto loadorder = deployers_[deployer]->getLoadorder();
     std::vector<std::string> mod_names;
-    mod_names.reserve(loadorder.size());
+    mod_names.reserve(loadorder->size());
     std::vector<std::vector<std::string>> manual_tags;
-    manual_tags.reserve(loadorder.size());
+    manual_tags.reserve(loadorder->size());
     std::vector<std::vector<std::string>> auto_tags;
-    manual_tags.reserve(loadorder.size());
-    for(const auto& entry : loadorder)
+    manual_tags.reserve(loadorder->size());
+    for(auto& entry : *loadorder)
     {
       if (entry->isSeparator) continue;
       auto mod_info = static_cast<DeployerModInfo *>(entry);
       auto mod_name = std::ranges::find_if(installed_mods_, [&mod_info](auto& mod) { return mod.id == mod_info->id; })->name;
-      auto item = new DeployerModInfo(false, mod_name, "", mod_info->id, mod_info->enabled);
-      root->emplace_back(item);
+      entry->name = mod_name;
       mod_names.push_back(mod_name);
       if(manual_tag_map_.contains(mod_info->id))
         manual_tags.push_back(manual_tag_map_.at(mod_info->id));
@@ -903,7 +902,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
              // manual_tags,
              // auto_tags,
              mods_per_tag,
-             root,
+             loadorder,
              false,
              false,
              deployers_[deployer]->supportsSorting(),
@@ -921,7 +920,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
   }
   else
   {
-    auto loadorder = deployers_[deployer]->getLoadorder();
+    auto loadorder = *deployers_[deployer]->getLoadorder();
     std::vector<std::string> mod_names;
     if(deployers_[deployer]->idsAreSourceReferences())
     {
@@ -1642,7 +1641,7 @@ void ModdedApplication::updateSettings(bool write)
         deployers_[depl]->setProfile(prof);
         json_settings_["deployers"][depl]["profiles"][prof]["name"] = profile_names_[prof];
         auto loadorder = deployers_[depl]->getLoadorder();
-        json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = loadorder.toJson();
+        json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = loadorder->toJson();
         // for(int mod = 0; mod < loadorder.size(); mod++)
         // {
           // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"][mod]["id"] =
@@ -1942,7 +1941,7 @@ void ModdedApplication::updateDeployerGroups(std::optional<ProgressNode*> progre
       deployers_[depl]->setProfile(profile);
       std::vector<bool> completed_groups(active_group_members_.size());
       std::fill(completed_groups.begin(), completed_groups.end(), false);
-      for(const auto& entry : deployers_[depl]->getLoadorder())
+      for(const auto& entry : *deployers_[depl]->getLoadorder())
       {
         if(!group_map_.contains(entry->id))
           continue;

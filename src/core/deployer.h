@@ -104,7 +104,7 @@ public:
    * \brief Getter for the current mod load order.
    * \return The load order.
    */
-  virtual TreeItem<DeployerEntry> getLoadorder() const;
+  virtual TreeItem<DeployerEntry> *getLoadorder();
   /*!
    * \brief Returns the type of this deployer, i.e. SIMPLEDEPLOYER
    * \return The type.

@@ -114,12 +114,12 @@ void Deployer::setLoadorder(Json::Value loadorder)
   }
 }
 
-TreeItem<DeployerEntry> Deployer::getLoadorder() const
+TreeItem<DeployerEntry> *Deployer::getLoadorder()
 {
   if(loadorders_.empty() || current_profile_ < 0 || current_profile_ >= loadorders_.size() ||
      loadorders_[current_profile_].empty())
-    return TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
-  return loadorders_[current_profile_];
+    return new TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  return &loadorders_[current_profile_];
 }
 
 std::string Deployer::getType() const
@@ -133,18 +133,7 @@ void Deployer::changeLoadorder(int from_index, int to_index)
     return;
   if(to_index < 0 || to_index >= loadorders_[current_profile_].size())
     return;
-  if(to_index < from_index)
-  {
-    std::rotate(loadorders_[current_profile_].begin() + to_index,
-                loadorders_[current_profile_].begin() + from_index,
-                loadorders_[current_profile_].begin() + from_index + 1);
-  }
-  else
-  {
-    std::rotate(loadorders_[current_profile_].begin() + from_index,
-                loadorders_[current_profile_].begin() + from_index + 1,
-                loadorders_[current_profile_].begin() + to_index + 1);
-  }
+  loadorders_[current_profile_].rotate(from_index, to_index);
 }
 
 bool Deployer::addMod(int mod_id, bool enabled, bool update_conflicts)
