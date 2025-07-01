@@ -114,6 +114,17 @@ void TreeItem<T>::emplace_back(T *data)
   dirty = true;
 }
 
+template <typename T>
+Json::Value TreeItem<T>::toJson() const {
+  Json::Value json;
+  if (itemData) {
+    json = itemData->toJson();
+  }
+  for (const auto &child : m_childItems) {
+    json["children"].append(child->toJson());
+  }
+  return json;
+}
 
 template class TreeItem<DeployerEntry>;
 

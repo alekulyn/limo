@@ -178,6 +178,8 @@ set(CORE_SOURCES
         src/core/wildcardmatching.h
         src/core/treeitem.t.hpp
         src/core/treeitem.h
+        src/core/deployerentry.hpp
+        src/core/deployerentry.cpp
 )
 
 add_library(core OBJECT ${CORE_SOURCES})

@@ -4,6 +4,7 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
 
+#include <json/value.h>
 #include <vector>
 
 template <typename T>
@@ -49,6 +50,11 @@ public:
     TreeItem *operator[](int i) {
       if (dirty) refresh();
       return m_childItems[i];
+    }
+    Json::Value toJson() const;
+    TreeItem<T> *back() {
+      if (m_childItems.empty()) return nullptr;
+      return m_childItems.back();
     }
 
 private:

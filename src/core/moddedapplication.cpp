@@ -1642,14 +1642,15 @@ void ModdedApplication::updateSettings(bool write)
         deployers_[depl]->setProfile(prof);
         json_settings_["deployers"][depl]["profiles"][prof]["name"] = profile_names_[prof];
         auto loadorder = deployers_[depl]->getLoadorder();
-        for(int mod = 0; mod < loadorder.size(); mod++)
-        {
+        json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = loadorder.toJson();
+        // for(int mod = 0; mod < loadorder.size(); mod++)
+        // {
           // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"][mod]["id"] =
           //   std::get<0>(loadorder[mod]);
           // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"][mod]["enabled"] =
           //   std::get<1>(loadorder[mod]);
-          json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = NULL;
-        }
+          // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = NULL;
+        // }
         auto conflict_groups = deployers_[depl]->getConflictGroups();
         for(int group = 0; group < conflict_groups.size(); group++)
         {
@@ -1826,19 +1827,20 @@ void ModdedApplication::updateState(bool read)
         deployers_[depl]->addProfile();
         deployers_[depl]->setProfile(prof);
         Json::Value loadorder = deployers[depl]["profiles"][prof]["loadorder"];
-        for(int mod = 0; mod < loadorder.size(); mod++)
-        {
-          int mod_id = loadorder[mod]["id"].asInt();
-          if(std::find_if(installed_mods_.begin(),
-                          installed_mods_.end(),
-                          [mod_id](const Mod& m)
-                          { return m.id == mod_id; }) == installed_mods_.end())
-            throw ParseError("Unknown mod id in deployers: " + std::to_string(mod_id) + " in \"" +
-                             (staging_dir_ / CONFIG_FILE_NAME).string() + "\"");
-          if(!group_map_.contains(mod_id) || active_group_members_[group_map_[mod_id]] == mod_id &&
-                                               !(deployers_[depl]->isAutonomous()))
-            deployers_[depl]->addMod(mod_id, loadorder[mod]["enabled"].asBool(), false);
-        }
+        deployers_[depl]->setLoadorder(loadorder);
+        // for(int mod = 0; mod < loadorder.size(); mod++)
+        // {
+        //   int mod_id = loadorder[mod]["id"].asInt();
+        //   if(std::find_if(installed_mods_.begin(),
+        //                   installed_mods_.end(),
+        //                   [mod_id](const Mod& m)
+        //                   { return m.id == mod_id; }) == installed_mods_.end())
+        //     throw ParseError("Unknown mod id in deployers: " + std::to_string(mod_id) + " in \"" +
+        //                      (staging_dir_ / CONFIG_FILE_NAME).string() + "\"");
+        //   if(!group_map_.contains(mod_id) || active_group_members_[group_map_[mod_id]] == mod_id &&
+        //                                        !(deployers_[depl]->isAutonomous()))
+        //     deployers_[depl]->addMod(mod_id, loadorder[mod]["enabled"].asBool(), false);
+        // }
         Json::Value conflict_groups_json = deployers[depl]["profiles"][prof]["conflict_groups"];
         std::vector<std::vector<int>> conflict_groups;
         for(int group = 0; group < conflict_groups_json.size(); group++)

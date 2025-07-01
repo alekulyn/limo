@@ -85,6 +85,35 @@ void Deployer::setLoadorder(const TreeItem<DeployerEntry>& loadorder)
   loadorders_[current_profile_] = loadorder;
 }
 
+void Deployer::setLoadorder(Json::Value entry, TreeItem<DeployerEntry> &current)
+{
+  if(entry.isObject() && entry["isSeparator"].asBool())
+  {
+    current.emplace_back(new DeployerEntry(true, entry["name"].asString()));
+    for (const auto& sub_entry : entry["children"])
+    {
+      setLoadorder(sub_entry, *current.back());
+    }
+  }
+  else if(entry.isObject())
+  {
+    current.emplace_back(
+      new DeployerModInfo(false, entry["name"].asString(), "", entry["id"].asInt(),
+                          entry["status"].asBool()));
+  }
+}
+
+void Deployer::setLoadorder(Json::Value loadorder)
+{
+  if (!loadorder["children"].isNull() && loadorder["children"].isArray())
+  {
+    for (const auto& entry : loadorder["children"])
+    {
+      setLoadorder(entry, loadorders_[current_profile_]);
+    }
+  }
+}
+
 TreeItem<DeployerEntry> Deployer::getLoadorder() const
 {
   if(loadorders_.empty() || current_profile_ < 0 || current_profile_ >= loadorders_.size() ||

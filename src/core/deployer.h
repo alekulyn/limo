@@ -99,6 +99,7 @@ public:
    * \param loadorder The new load order.
    */
   void setLoadorder(const TreeItem<DeployerEntry>& loadorder);
+  void setLoadorder(Json::Value loadorder);
   /*!
    * \brief Getter for the current mod load order.
    * \return The load order.
@@ -494,4 +495,5 @@ protected:
    * \param directory Directory from which to remove the file.
    */
   void removeManagedDirFile(const std::filesystem::path& directory) const;
+  void setLoadorder(Json::Value entry, TreeItem<DeployerEntry>& current);
 };
