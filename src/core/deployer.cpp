@@ -87,7 +87,7 @@ void Deployer::setLoadorder(const TreeItem<DeployerEntry>& loadorder)
 
 void Deployer::setLoadorder(Json::Value entry, TreeItem<DeployerEntry> &current)
 {
-  if(entry.isObject() && entry["isSeparator"].asBool())
+  if(entry.isObject() && entry.isMember("name"))
   {
     current.emplace_back(new DeployerEntry(true, entry["name"].asString()));
     for (const auto& sub_entry : entry["children"])
@@ -95,7 +95,7 @@ void Deployer::setLoadorder(Json::Value entry, TreeItem<DeployerEntry> &current)
       setLoadorder(sub_entry, *current.back());
     }
   }
-  else if(entry.isObject())
+  else if(entry.isObject() && entry.isMember("status"))
   {
     current.emplace_back(
       new DeployerModInfo(false, entry["name"].asString(), "", entry["id"].asInt(),
@@ -167,7 +167,8 @@ void Deployer::setModStatus(int mod_id, bool status)
                            loadorders_[current_profile_].end(),
                            [mod_id](const auto& entry) { return entry->id == mod_id; });
   auto deployer_mod = static_cast<DeployerModInfo *>(*iter);
-  deployer_mod->enabled = status;
+  if (deployer_mod != nullptr && !deployer_mod->isSeparator)
+    deployer_mod->enabled = status;
   return;
 }
 

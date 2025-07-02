@@ -213,7 +213,11 @@ QModelIndex DeployerListModel::parent(const QModelIndex &index) const
 bool DeployerListModel::hasChildren(const QModelIndex &parent = QModelIndex()) const
 {
   if (deployer_info_.supports_expandable) {
-    return true;
+    auto item = getItem(parent);
+    if (item != nullptr && item->getData()->isSeparator) {
+      return true;
+    }
+    return false;
   } else {
     if (!parent.isValid()) {
       return true;
