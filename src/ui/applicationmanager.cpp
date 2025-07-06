@@ -478,6 +478,12 @@ void ApplicationManager::changeLoadorder(int app_id, int deployer, int from_idx,
     handleExceptions<&ModdedApplication::changeLoadorder>(app_id, deployer, from_idx, to_idx);
 }
 
+void ApplicationManager::categorizeMod(int app_id, int deployer, int from_idx, int to_idx)
+{
+  if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
+    handleExceptions<&ModdedApplication::categorizeMod>(app_id, deployer, from_idx, to_idx);
+}
+
 void ApplicationManager::updateModDeployers(int app_id,
                                             std::vector<int> mod_ids,
                                             std::vector<bool> deployers)

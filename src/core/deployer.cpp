@@ -136,6 +136,11 @@ void Deployer::changeLoadorder(int from_index, int to_index)
   loadorders_[current_profile_].rotate(from_index, to_index);
 }
 
+void Deployer::categorizeMod(int from_index, int to_index)
+{
+  loadorders_[current_profile_].recategorize(from_index, to_index);
+}
+
 bool Deployer::addMod(int mod_id, bool enabled, bool update_conflicts)
 {
   if(hasMod(mod_id))

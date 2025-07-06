@@ -594,6 +594,7 @@ public slots:
    * \param to New mod position.
    */
   void onModMoved(int from, int to);
+  void onModCategorized(int from, int to);
   /*!
    * \brief Updates the profile combo box with new profile names.
    * \param names The new names.
@@ -1188,6 +1189,7 @@ signals:
    * \param to_index Destination index.
    */
   void changeLoadorder(int app_id, int deployer, int from_idx, int to_idx);
+  void categorizeMod(int app_id, int deployer, int from_idx, int to_idx);
   /*!
    * \brief Deploys mods using all Deployer objects of one \ref ModdedApplication "application".
    * \param app_id The target \ref ModdedApplication "application".

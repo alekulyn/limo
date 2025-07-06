@@ -13,9 +13,8 @@ class TreeItem
 public:
     explicit TreeItem(T *data, TreeItem *parent = nullptr);
 
-    TreeItem *child(int number); int childCount() const; T *data() const;
-    void emplace_back(TreeItem *data);
-    void emplace_back(T *data);
+    TreeItem *child(int number);
+    int childCount() const;
     TreeItem *parent();
     int row() const;
     bool setData(T *value);
@@ -30,6 +29,10 @@ public:
       }
     }
     
+    void emplace_back(TreeItem *data);
+    void emplace_back(T *data);
+    void insert(int position, TreeItem<T> *item);
+    void remove(TreeItem<T> *item);
     std::vector<T *>::iterator begin() {
       if (dirty) refresh();
       return traversalItems.begin();
@@ -42,10 +45,7 @@ public:
       return m_childItems.size();
     }
     bool empty() const { return m_childItems.empty(); }
-    void erase(T *item) {
-      if (dirty) preOrderTraversal();
-      auto found = std::ranges::find_if(traversal.begin(), traversal.end(), [item](TreeItem<T> *e) { return e->getData() == item; });
-    }
+    void erase(T *item);
     TreeItem *operator[](int i) {
       if (dirty) refresh();
       return m_childItems[i];
@@ -55,25 +55,13 @@ public:
       if (m_childItems.empty()) return nullptr;
       return m_childItems.back();
     }
-    void rotate(int from, int to) {
-      if(to < from)
-      {
-        std::rotate(m_childItems.begin() + to,
-                    m_childItems.begin() + from,
-                    m_childItems.begin() + from + 1);
-      }
-      else
-      {
-        std::rotate(m_childItems.begin() + from,
-                    m_childItems.begin() + from + 1,
-                    m_childItems.begin() + to + 1);
-      }
-    }
+    void rotate(int from, int to);
+    void recategorize(int from, int to);
 
 private:
     std::vector<TreeItem<T> *> m_childItems;
     T *itemData;
-    TreeItem *m_parentItem;
+    TreeItem<T> *m_parentItem;
 
     bool dirty = true;
     std::vector<TreeItem<T> *> traversal;

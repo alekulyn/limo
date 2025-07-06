@@ -75,12 +75,31 @@ void TableCellDelegate::paint(QPainter* painter,
   }
   if(parent_view_->isInDragDrop())
   {
-    if(parent_view_->mouseInUpperHalfOfRow() && mouse_row == view_index.row() ||
-       !parent_view_->mouseInUpperHalfOfRow() && mouse_row + 1 == view_index.row())
-      painter->drawLine(rect.topLeft(), rect.topRight());
-    else if(!parent_view_->mouseInUpperHalfOfRow() && mouse_row == view_index.row() ||
-            parent_view_->mouseInUpperHalfOfRow() && mouse_row - 1 == view_index.row())
-      painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+    if (parent_view_->getMouseRegion() != parent_view_->ROW_REGION.HOTSPOT) {
+      bool MOUSE_IN_UPPER = parent_view_->getMouseRegion() == parent_view_->ROW_REGION.UPPER;
+      bool MOUSE_IN_LOWER = parent_view_->getMouseRegion() == parent_view_->ROW_REGION.LOWER;
+      if((MOUSE_IN_UPPER && mouse_row == view_index.row()) ||
+            (MOUSE_IN_LOWER && mouse_row + 1 == view_index.row()))
+        painter->drawLine(rect.topLeft(), rect.topRight());
+      if((MOUSE_IN_LOWER && mouse_row == view_index.row()) ||
+            (MOUSE_IN_UPPER && mouse_row - 1 == view_index.row()))
+        painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+    }
+    else {
+      if(mouse_row == view_index.row()) {
+        const float color_ratio = 0.8;
+        auto hl_color = option.palette.color(QPalette::Highlight);
+        auto bg_color = option.palette.color(is_even_row ? QPalette::Base : QPalette::AlternateBase);
+        auto mix_color = hl_color;
+        mix_color.setRed(hl_color.red() * (1 - color_ratio) + bg_color.red() * color_ratio);
+        mix_color.setGreen(hl_color.green() * (1 - color_ratio) + bg_color.green() * color_ratio);
+        mix_color.setBlue(hl_color.blue() * (1 - color_ratio) + bg_color.blue() * color_ratio);
+        cell.palette.setBrush(QPalette::Base, QBrush(mix_color));
+        QPixmap map(rect.width(), rect.height());
+        map.fill(cell.palette.color(QPalette::Base));
+        painter->drawPixmap(rect, map);
+      }
+    }
   }
   if(!parent_view_->selectionModel()->rowIntersectsSelection(view_index.row()) &&
      parent_view_->selectionModel()->currentIndex().row() == view_index.row())

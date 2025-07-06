@@ -21,6 +21,13 @@ class ModListView : public QTreeView
 {
   Q_OBJECT
 public:
+  struct {
+    int UPPER = 1;
+    int HOTSPOT = 2;
+    int LOWER = 3;
+    int NONE = 4;
+  } ROW_REGION;
+  std::vector<std::string> REGION_NAMES = {"", "UPPER", "HOTSPOT", "LOWER", "NONE"};
   /*!
    * \brief Simply calls QTableview's constructor with parent as argument.
    * \param parent The parent widget for this widget.
@@ -51,7 +58,7 @@ public:
    * \brief Returns true iff mouse is currently in the upper half of a row.
    * \return True iff mouse is currently in the upper half of a row.
    */
-  bool mouseInUpperHalfOfRow() const;
+  int getMouseRegion() const;
   /*!
    * \brief Returns the number of currently selected rows.
    * \return The number of rows.
@@ -67,6 +74,7 @@ public:
    * \return The list.
    */
   QModelIndexList getSelectedRowIndices() const;
+  QModelIndex getHoverIndex() const { return model()->index(mouse_hover_row_, 1); }
 
 protected:
   /*! \brief Last row on which a mouse button has been pressed. */
@@ -78,7 +86,7 @@ protected:
   /*! \brief Indicates if an item is currently being moved by drag and drop. */
   bool is_in_drag_drop_ = false;
   /*! \brief Stores if mouse is currently in the upper half of a row. */
-  bool mouse_in_upper_half_of_row_ = false;
+  int mouse_row_region = ROW_REGION.NONE;
 
   /*!
    * \brief If dropped item was a file or a list of files, emit \ref modAdded.

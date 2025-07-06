@@ -140,9 +140,9 @@ bool ModListView::isInDragDrop() const
   return is_in_drag_drop_;
 }
 
-bool ModListView::mouseInUpperHalfOfRow() const
+int ModListView::getMouseRegion() const
 {
-  return mouse_in_upper_half_of_row_;
+  return mouse_row_region;
 }
 
 int ModListView::getNumSelectedRows() const

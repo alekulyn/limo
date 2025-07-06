@@ -1,10 +1,10 @@
 #include "deployerlistmodel.h"
 #include "colors.h"
+#include "core/deployerentry.hpp"
 #include "core/treeitem.h"
 #include "modlistmodel.h"
 #include <QApplication>
 #include <QBrush>
-#include <QDebug>
 #include <ranges>
 
 namespace str = std::ranges;
@@ -40,11 +40,16 @@ QVariant DeployerListModel::headerData(int section, Qt::Orientation orientation,
 
 int DeployerListModel::rowCount(const QModelIndex& parent) const
 {
-  // BUG: Only works on flat trees
-  // if (deployer_info_.root != nullptr && parent.isValid())
-  if (deployer_info_.root != nullptr)
-    return deployer_info_.root->childCount();
-  return 0;
+  if (!parent.isValid() && deployer_info_.root == nullptr)
+    return 0;
+  // if (parent.column() > 0)
+  //   return 0;
+
+  const TreeItem<DeployerEntry> *parentItem = parent.isValid()
+    ? static_cast<const TreeItem<DeployerEntry> *>(parent.internalPointer())
+    : deployer_info_.root;
+
+  return parentItem->childCount();
 }
 
 int DeployerListModel::columnCount(const QModelIndex& parent) const
@@ -56,7 +61,8 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
 {
   const int row = index.row();
   const int col = index.column();
-  auto data = static_cast<DeployerEntry *>(deployer_info_.root->child(row)->data());
+  auto entry = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
+  auto data = entry->getData();
   if(role == Qt::BackgroundRole)
   {
     if(col == status_col && !data->isSeparator)
@@ -200,14 +206,27 @@ bool DeployerListModel::usesUnsafeSorting() const
 QModelIndex DeployerListModel::index(int row, int column, const QModelIndex &parent) const
 {
   if (!hasIndex(row, column, parent))
-    return QModelIndex();
+    return {};
 
-  return this->createIndex(row, column);
+  TreeItem<DeployerEntry> *parentItem = parent.isValid()
+    ? static_cast<TreeItem<DeployerEntry> *>(parent.internalPointer())
+    : deployer_info_.root;
+
+  if (auto *childItem = parentItem->child(row))
+    return createIndex(row, column, childItem);
+  return {};
 }
 
 QModelIndex DeployerListModel::parent(const QModelIndex &index) const
 {
-  return this->createIndex(0, 0);
+  if (!index.isValid())
+    return {};
+
+  auto *childItem = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
+  TreeItem<DeployerEntry>  *parentItem = childItem->parent();
+
+  return parentItem != deployer_info_.root
+  ? createIndex(parentItem->row(), 0, parentItem) : QModelIndex{};
 }
 
 bool DeployerListModel::hasChildren(const QModelIndex &parent = QModelIndex()) const
@@ -259,3 +278,4 @@ void DeployerListModel::addSeparator()
   }
   emit layoutChanged();
 }
+

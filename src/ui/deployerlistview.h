@@ -66,4 +66,5 @@ signals:
    * \param New mod row.
    */
   void modMoved(int from_row, int to_row);
+  void modCategorized(int from_row, int to_row);
 };

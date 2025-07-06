@@ -22,37 +22,30 @@ TreeItem<T>::TreeItem(T *data, TreeItem *parent)
 }
 
 template <typename T>
-TreeItem<T> *TreeItem<T>::child(int number)
+TreeItem<T> *TreeItem<T>::child(int row)
 {
-    return (number >= 0 && number < childCount())
-        ? m_childItems.at(number) : nullptr;
+  return row >= 0 && row < childCount() ? m_childItems.at(row) : nullptr;
 }
 
 template <typename T>
 int TreeItem<T>::childCount() const
 {
-    return int(m_childItems.size());
+  return int(m_childItems.size());
 }
 
 template <typename T>
 int TreeItem<T>::row() const
 {
-    if (!m_parentItem)
-        return 0;
-    const auto it = std::ranges::find_if(m_parentItem->m_childItems.cbegin(), m_parentItem->m_childItems.cend(),
-                                 [this](const TreeItem *treeItem) {
-        return treeItem == this;
-    });
+  if (!m_parentItem)
+    return 0;
+  const auto it = std::ranges::find_if(m_parentItem->m_childItems.cbegin(), m_parentItem->m_childItems.cend(),
+                                       [this](const TreeItem *treeItem) {
+                                       return treeItem == this;
+                                       });
 
-    if (it != m_parentItem->m_childItems.cend())
-        return std::distance(m_parentItem->m_childItems.cbegin(), it);
-    return -1;
-}
-
-template <typename T>
-T *TreeItem<T>::data() const
-{
-    return itemData;
+  if (it != m_parentItem->m_childItems.cend())
+    return std::distance(m_parentItem->m_childItems.cbegin(), it);
+  return -1;
 }
 
 template <typename T>
@@ -112,6 +105,59 @@ Json::Value TreeItem<T>::toJson() const {
     json["children"].append(child->toJson());
   }
   return json;
+}
+
+template <typename T>
+void TreeItem<T>::rotate(int from, int to) {
+  if(to < from)
+  {
+    std::rotate(m_childItems.begin() + to,
+                m_childItems.begin() + from,
+                m_childItems.begin() + from + 1);
+  }
+  else
+  {
+    std::rotate(m_childItems.begin() + from,
+                m_childItems.begin() + from + 1,
+                m_childItems.begin() + to + 1);
+  }
+  dirty = true;
+}
+
+template <typename T>
+void TreeItem<T>::recategorize(int from, int to) {
+  if (from == to || from < 0 || to < 0 || from >= m_childItems.size() || to >= m_childItems.size())
+    return;
+  if (dirty) preOrderTraversal();
+  auto from_item = traversal[from+1];
+  auto to_item = traversal[to+1];
+  from_item->m_parentItem->remove(from_item);
+  to_item->emplace_back(from_item);
+  dirty = true;
+}
+
+template <typename T>
+void TreeItem<T>::insert(int position, TreeItem<T> *item) {
+  if (dirty) refresh();
+  m_childItems.insert(m_childItems.begin() + position, item);
+  dirty = true;
+}
+
+template <typename T>
+void TreeItem<T>::remove(TreeItem<T> *item) {
+  if (dirty) refresh();
+  auto it = std::ranges::find(m_childItems, item);
+  if (it != m_childItems.end()) {
+    m_childItems.erase(it);
+    dirty = true;
+  }
+}
+
+// TODO: Finish
+template <typename T>
+void TreeItem<T>::erase(T *item) {
+  if (dirty) preOrderTraversal();
+  auto found = std::ranges::find_if(traversal.begin(), traversal.end(), [item](TreeItem<T> *e) { return e->getData() == item; });
 }
 
 template class TreeItem<DeployerEntry>;
