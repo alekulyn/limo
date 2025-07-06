@@ -14,22 +14,23 @@ void DeployerListView::mousePressEvent(QMouseEvent* event)
 {
   const auto index = indexAt(event->pos());
   const int event_row = index.row();
-  const int prev_row = selectionModel()->currentIndex().row();
+  const auto prev_index = selectionModel()->currentIndex();
   selectionModel()->clearSelection();
   const auto selection = QItemSelection(model()->index(event_row, 1, index.parent()),
                                         model()->index(event_row, model()->columnCount() - 1, index.parent()));
   selectionModel()->select(selection, QItemSelectionModel::Select);
   selectionModel()->setCurrentIndex(model()->index(event_row, 1, index.parent()),
                                     QItemSelectionModel::NoUpdate);
-  updateMouseDownRow(event_row);  // BUG: Only works for flat data, not hierarchical
-  updateRow(prev_row);
+  updateMouseDownRow(index);
+  updateRow(prev_index);
 }
 
 void DeployerListView::mouseMoveEvent(QMouseEvent* event)
 {
-  const int row = indexAt(event->pos()).row();
+  const auto index = indexAt(event->pos());
+  const int row = index.row();
   if(QGuiApplication::mouseButtons().testFlag(Qt::LeftButton) && enable_drag_reorder_ &&
-     mouse_down_row_ != -1)
+     mouse_down_.isValid())
   {
     setCursor(Qt::ClosedHandCursor);
     is_in_drag_drop_ = true;
@@ -50,12 +51,17 @@ void DeployerListView::mouseMoveEvent(QMouseEvent* event)
     mouse_row_region = mouse_row_region_curr;
     if(is_in_drag_drop_)
     {
-      for (const int i : { -2, -1, 0, 1, 2 }) {
-        updateRow(row + i);
+      for (const auto i : {
+        indexAbove(indexAbove(index)),
+        indexAbove(index),
+        index,
+        indexBelow(index),
+        indexBelow(indexBelow(index)) }) {
+        updateRow(i);
       }
     }
   }
-  updateMouseHoverRow(row);
+  updateMouseHoverRow(index);
 }
 
 void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
@@ -76,40 +82,39 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   setCursor(Qt::ArrowCursor);
   if(enable_drag_reorder_ && event_row > -1 && was_in_drag_drop_)
   {
-    int target_row = 0;
+    QModelIndex target = QModelIndex();
     if (mouse_row_region == ROW_REGION.UPPER || mouse_row_region == ROW_REGION.HOTSPOT)
-      target_row = event_row;
+      target = index;
     else if (mouse_row_region == ROW_REGION.LOWER)
-      target_row = event_row + 1;
-    if(mouse_down_row_ < target_row && reorder)
-      target_row--;
-    target_row = std::min(target_row, model()->rowCount());
-    if(target_row != mouse_down_row_ && rowIndexIsValid(target_row) &&
-       rowIndexIsValid(mouse_down_row_))
+      target = indexBelow(index);
+    if(mouse_down_ < target && reorder)
+      target = indexAbove(index);
+    // target_row = std::min(target_row, model()->rowCount());
+    if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
       const auto from_row = static_cast<DeployerListProxyModel*>(model())
-                              ->mapToSource(model()->index(mouse_down_row_, 0))
+                              ->mapToSource(model()->index(mouse_down_.row(), 0, mouse_down_.parent()))
                               .row();
       const auto to_row = static_cast<DeployerListProxyModel*>(model())
-                            ->mapToSource(model()->index(target_row, 0))
+                            ->mapToSource(model()->index(target.row(), 0, target.parent()))
                             .row();
       if (reorder)
         emit modMoved(from_row, to_row);
       else
         emit modCategorized(from_row, to_row);
-      selectionModel()->setCurrentIndex(model()->index(target_row, 1),
+      selectionModel()->setCurrentIndex(model()->index(target.row(), 1, target.parent()),
                                         QItemSelectionModel::SelectCurrent);
-      updateMouseDownRow(target_row);
+      updateMouseDownRow(target);
     }
     else
     {
-      updateRow(event_row);
-      updateRow(event_row - 1);
-      updateRow(event_row + 1);
+      updateRow(index);
+      updateRow(indexAbove(index));
+      updateRow(indexBelow(index));
     }
   }
-  if(event_row != mouse_down_row_)
-    updateMouseHoverRow(-1);
+  if(event_row != mouse_down_.row())
+    updateMouseHoverRow(QModelIndex());
   else if(event_col == DeployerListModel::status_col && event_row > -1 &&
           event_row < model()->rowCount() && enable_buttons_ && !was_in_drag_drop_)
   {

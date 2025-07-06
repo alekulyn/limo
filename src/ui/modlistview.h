@@ -11,6 +11,7 @@
 #include <QTreeView>
 #include <QWidget>
 #include <QtCore>
+#include <qabstractitemmodel.h>
 #include <set>
 
 
@@ -48,7 +49,7 @@ public:
    * \brief Returns the row currently under the mouse, or -1 if no row is under the mouse.
    * \return The row.
    */
-  int getHoverRow() const;
+  QModelIndex getHoverRow() const;
   /*!
    * \brief Returns true iff an item is currently being moved by drag and drop.
    * \return True while in drag drop mode.
@@ -74,13 +75,13 @@ public:
    * \return The list.
    */
   QModelIndexList getSelectedRowIndices() const;
-  QModelIndex getHoverIndex() const { return model()->index(mouse_hover_row_, 1); }
+  QModelIndex getHoverIndex() const { return model()->index(mouse_hover_.row(), 1, mouse_hover_.parent()); }
 
 protected:
   /*! \brief Last row on which a mouse button has been pressed. */
-  int mouse_down_row_ = -1;
+  QModelIndex mouse_down_ = QModelIndex();
   /*! \brief Last row over which the cursor hovered. */
-  int mouse_hover_row_ = -1;
+  QModelIndex mouse_hover_ = QModelIndex();
   /*! \brief Determines if buttons react to inputs. */
   bool enable_buttons_ = true;
   /*! \brief Indicates if an item is currently being moved by drag and drop. */
@@ -170,17 +171,17 @@ protected:
    * \brief Sets mouse_hover_row_ to the given row and updates the view accordingly.
    * \param row New row under the mouse.
    */
-  void updateMouseHoverRow(int row);
+  void updateMouseHoverRow(QModelIndex index);
   /*!
    * \brief Sets mouse_down_row_ to the given row and updates the view accordingly.
    * \param row Row which has been clicked.
    */
-  void updateMouseDownRow(int row);
+  void updateMouseDownRow(QModelIndex index);
   /*!
    * \brief Repaints the given rows
    * \param row Row to repaint.
    */
-  void updateRow(int row);
+  void updateRow(QModelIndex index);
 
 signals:
   /*!

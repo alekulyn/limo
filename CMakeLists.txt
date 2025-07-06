@@ -341,6 +341,8 @@ set(PROJECT_SOURCES
         src/ui/validatinglineedit.h
         src/ui/versionboxdelegate.cpp
         src/ui/versionboxdelegate.h
+        src/ui/qmodelindexcheck.h
+        src/ui/qmodelindexcheck.cpp
 )
 
 # Set install target so app config files can be found

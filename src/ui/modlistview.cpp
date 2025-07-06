@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QGuiApplication>
 #include <QMimeData>
+#include <qabstractitemmodel.h>
 #include <ranges>
 
 namespace str = std::ranges;
@@ -73,13 +74,13 @@ void ModListView::mousePressEvent(QMouseEvent* event)
     {
       selectionModel()->clear();
       for(const auto& index : indices)
-        updateRow(index.row());
+        updateRow(index);
       selectionModel()->setCurrentIndex(model()->index(event_row, event_col),
                                         QItemSelectionModel::Select);
       selectionModel()->select(selection, QItemSelectionModel::Select);
     }
   }
-  updateMouseDownRow(event_row);
+  updateMouseDownRow(index);
 }
 
 void ModListView::mouseReleaseEvent(QMouseEvent* event)
@@ -87,8 +88,8 @@ void ModListView::mouseReleaseEvent(QMouseEvent* event)
   const auto index = indexAt(event->pos());
   const int event_row = index.row();
   const int event_col = index.column();
-  if(event_row != mouse_down_row_)
-    updateMouseHoverRow(-1);
+  if(event_row != mouse_down_.row())
+    updateMouseHoverRow(QModelIndex());
   else if(event_col == 0 && event_row > -1 && event_row < model()->rowCount())
   {
     if(enable_buttons_)
@@ -106,32 +107,32 @@ bool ModListView::rowIndexIsValid(int row) const
   return row > -1 && row < model()->rowCount();
 }
 
-void ModListView::updateMouseHoverRow(int row)
+void ModListView::updateMouseHoverRow(QModelIndex index)
 {
-  if(mouse_hover_row_ != row)
+  if(mouse_hover_ != index)
   {
-    updateRow(row);
-    updateRow(mouse_hover_row_);
-    mouse_hover_row_ = row;
+    updateRow(index);
+    updateRow(mouse_hover_);
+    mouse_hover_ = index;
   }
 }
 
-void ModListView::updateMouseDownRow(int row)
+void ModListView::updateMouseDownRow(QModelIndex index)
 {
-  if(mouse_down_row_ != row)
+  if(mouse_down_ != index)
   {
-    updateRow(row);
-    updateRow(mouse_down_row_);
-    mouse_down_row_ = row;
+    updateRow(index);
+    updateRow(mouse_down_);
+    mouse_down_ = index;
   }
 }
 
-void ModListView::updateRow(int row)
+void ModListView::updateRow(QModelIndex index)
 {
-  if(rowIndexIsValid(row))
+  if(index.isValid())
   {
     for(int col = 0; col < model()->columnCount(); col++)
-      update(model()->index(row, col));
+      update(model()->index(index.row(), col));
   }
 }
 
@@ -174,15 +175,15 @@ QModelIndexList ModListView::getSelectedRowIndices() const
   return row_indices;
 }
 
-int ModListView::getHoverRow() const
+QModelIndex ModListView::getHoverRow() const
 {
-  return mouse_hover_row_;
+  return mouse_hover_;
 }
 
 void ModListView::mouseMoveEvent(QMouseEvent* event)
 {
-  const int row = indexAt(event->pos()).row();
-  updateMouseHoverRow(row);
+  const auto index = indexAt(event->pos());
+  updateMouseHoverRow(index);
 }
 
 void ModListView::mouseDoubleClickEvent(QMouseEvent* event)
@@ -190,7 +191,7 @@ void ModListView::mouseDoubleClickEvent(QMouseEvent* event)
   const auto index = indexAt(event->pos());
   const int event_row = index.row();
   const int event_col = index.column();
-  if(event->button() == Qt::LeftButton && event_row == mouse_down_row_ &&
+  if(event->button() == Qt::LeftButton && event_row == mouse_down_.row() &&
      (event_col == ModListModel::name_col ||
       event_col == ModListModel::version_col &&
         columnViewportPosition(event_col) + columnWidth(event_col) - 18 >= event->x()) &&
@@ -200,10 +201,10 @@ void ModListView::mouseDoubleClickEvent(QMouseEvent* event)
 
 void ModListView::leaveEvent(QEvent* event)
 {
-  if(rect().contains(mapFromGlobal(QCursor::pos())) || !rowIndexIsValid(mouse_hover_row_) ||
-     mouse_hover_row_ == currentIndex().row())
+  if(rect().contains(mapFromGlobal(QCursor::pos())) || !mouse_hover_.isValid() ||
+     mouse_hover_.row() == currentIndex().row())
     return;
-  updateMouseHoverRow(-1);
+  updateMouseHoverRow(QModelIndex());
   QTreeView::leaveEvent(event);
 }
 
