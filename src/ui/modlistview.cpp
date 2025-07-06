@@ -1,9 +1,10 @@
 #include "modlistview.h"
 #include "modlistmodel.h"
+#include "qmodelindexcheck.h"
 #include <QDebug>
 #include <QGuiApplication>
 #include <QMimeData>
-#include <qabstractitemmodel.h>
+#include <QAbstractItemModel>
 #include <ranges>
 
 namespace str = std::ranges;
@@ -109,7 +110,7 @@ bool ModListView::rowIndexIsValid(int row) const
 
 void ModListView::updateMouseHoverRow(QModelIndex index)
 {
-  if(mouse_hover_ != index)
+  if(!sameRow(mouse_hover_, index))
   {
     updateRow(index);
     updateRow(mouse_hover_);
@@ -132,7 +133,7 @@ void ModListView::updateRow(QModelIndex index)
   if(index.isValid())
   {
     for(int col = 0; col < model()->columnCount(); col++)
-      update(model()->index(index.row(), col));
+      update(model()->index(index.row(), col,index.parent()));
   }
 }
 

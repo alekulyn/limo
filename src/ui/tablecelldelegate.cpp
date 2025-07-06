@@ -20,7 +20,7 @@ void TableCellDelegate::paint(QPainter* painter,
   const bool is_even_row = view_index.row() % 2 == 0;
   const auto mouse_row = parent_view_->getHoverRow();
   const bool row_is_selected =
-    parent_view_->selectionModel()->rowIntersectsSelection(view_index.row());
+    parent_view_->selectionModel()->rowIntersectsSelection(view_index.row(), view_index.parent());
   if(row_is_selected)
   {
     cell.palette.setBrush(

@@ -3,6 +3,7 @@
 #include "deployerlistproxymodel.h"
 #include "modlistmodel.h"
 #include "hotspot.h"
+#include "qmodelindexcheck.h"
 #include <QGuiApplication>
 
 DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
@@ -113,7 +114,7 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
       updateRow(indexBelow(index));
     }
   }
-  if(event_row != mouse_down_.row())
+  if(!sameRow(index, mouse_down_))
     updateMouseHoverRow(QModelIndex());
   else if(event_col == DeployerListModel::status_col && event_row > -1 &&
           event_row < model()->rowCount() && enable_buttons_ && !was_in_drag_drop_)
