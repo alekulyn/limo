@@ -96,13 +96,15 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
     if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
       const auto from_row = static_cast<DeployerListProxyModel*>(model())
-                              ->mapToSource(model()->index(mouse_down_.row(), 0, mouse_down_.parent()))
+                              ->mapToSource(mouse_down_)
                               .row();
       const auto to_row = static_cast<DeployerListProxyModel*>(model())
-                            ->mapToSource(model()->index(target.row(), 0, target.parent()))
+                            ->mapToSource(target)
                             .row();
       if (reorder)
+      {
         emit modMoved(from_row, to_row);
+      }
       else {
         rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
         auto category_map = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
