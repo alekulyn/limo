@@ -16,6 +16,7 @@ public:
     TreeItem *child(int number);
     int childCount() const;
     TreeItem *parent();
+    void setParent(TreeItem<T> *parent);
     int row() const;
     bool setData(T *value);
     T *getData() const { return itemData; }

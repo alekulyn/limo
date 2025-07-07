@@ -101,7 +101,7 @@ void TableCellDelegate::paint(QPainter* painter,
       }
     }
   }
-  if(!parent_view_->selectionModel()->rowIntersectsSelection(view_index.row()) &&
+  if(!parent_view_->selectionModel()->rowIntersectsSelection(view_index.row(), view_index.parent()) &&
      parent_view_->selectionModel()->currentIndex().row() == view_index.row())
   {
     QStyleOptionFocusRect indicator;

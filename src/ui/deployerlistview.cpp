@@ -91,6 +91,8 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
     if(mouse_down_ < target && reorder)
       target = indexAbove(index);
     // target_row = std::min(target_row, model()->rowCount());
+    // If separator expanded and mouse is in lower region, make separator's first child
+    // If separator is not expanded and mouse is in lower region, make separator's next sibling
     if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
       const auto from_row = static_cast<DeployerListProxyModel*>(model())
@@ -101,11 +103,20 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
                             .row();
       if (reorder)
         emit modMoved(from_row, to_row);
-      else
+      else {
+        rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
+        auto category_map = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+        auto mouse_map = static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_);
+        TreeItem<DeployerEntry> *category = static_cast<TreeItem<DeployerEntry> *>(category_map.internalPointer());
+        TreeItem<DeployerEntry> *item = static_cast<TreeItem<DeployerEntry> *>(mouse_map.internalPointer());
+        category->emplace_back(item);
+        item->parent()->remove(item);
+        item->setParent(category);
         emit modCategorized(from_row, to_row);
-      selectionModel()->setCurrentIndex(model()->index(target.row(), 1, target.parent()),
-                                        QItemSelectionModel::SelectCurrent);
-      updateMouseDownRow(target);
+      }
+      // selectionModel()->setCurrentIndex(model()->index(target.row(), 1, target.parent()),
+      //                                   QItemSelectionModel::SelectCurrent);
+      // updateMouseDownRow(target);
     }
     else
     {

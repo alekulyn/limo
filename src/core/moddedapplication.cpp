@@ -247,7 +247,7 @@ void ModdedApplication::changeLoadorder(int deployer, int from_index, int to_ind
 
 void ModdedApplication::categorizeMod(int deployer, int from_index, int to_index)
 {
-  deployers_[deployer]->categorizeMod(from_index, to_index);
+  // deployers_[deployer]->categorizeMod(from_index, to_index);
   updateSettings(true);
 }
 

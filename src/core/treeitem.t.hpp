@@ -153,6 +153,12 @@ void TreeItem<T>::remove(TreeItem<T> *item) {
   }
 }
 
+template <typename T>
+void TreeItem<T>::setParent(TreeItem<T> *parent) {
+  m_parentItem = parent;
+  dirty = true;
+}
+
 // TODO: Finish
 template <typename T>
 void TreeItem<T>::erase(T *item) {
