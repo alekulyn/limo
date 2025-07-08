@@ -9,7 +9,6 @@
 
 namespace str = std::ranges;
 
-
 DeployerListModel::DeployerListModel(QObject* parent) : QAbstractItemModel(parent) {
 }
 
@@ -251,13 +250,11 @@ bool DeployerListModel::setData(const QModelIndex &index, const QVariant &value,
     if (role != Qt::EditRole)
         return false;
 
-    TreeItem<DeployerEntry> *item = getItem(index);
-    bool result = item->setData(value.value<DeployerEntry *>());
+    auto item = getItem(index)->getData();
+    item->name = value.toString().toStdString();
+    emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
 
-    if (result)
-        emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
-
-    return result;
+    return value.toString() == item->name.c_str();
 }
 
 TreeItem<DeployerEntry> *DeployerListModel::getItem(const QModelIndex &index) const
@@ -279,3 +276,10 @@ void DeployerListModel::addSeparator()
   emit layoutChanged();
 }
 
+Qt::ItemFlags DeployerListModel::flags(const QModelIndex &index) const
+{
+    if (!index.isValid() || static_cast<TreeItem<DeployerEntry> *>(index.internalPointer())->getData()->isSeparator == false)
+        return Qt::NoItemFlags;
+
+    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+}

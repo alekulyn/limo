@@ -81,7 +81,7 @@ protected:
   /*! \brief Last row on which a mouse button has been pressed. */
   QModelIndex mouse_down_ = QModelIndex();
   /*! \brief Last row over which the cursor hovered. */
-  QModelIndex mouse_hover_ = QModelIndex();
+  QPersistentModelIndex mouse_hover_ = QModelIndex();
   /*! \brief Determines if buttons react to inputs. */
   bool enable_buttons_ = true;
   /*! \brief Indicates if an item is currently being moved by drag and drop. */

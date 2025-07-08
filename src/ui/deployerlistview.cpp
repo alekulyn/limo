@@ -150,3 +150,9 @@ void DeployerListView::setEnableDragReorder(bool enabled)
   enable_drag_reorder_ = enabled;
 }
 
+void DeployerListView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) 
+{
+  updateRow(topLeft);
+  emit modMoved();
+  QTreeView::dataChanged(topLeft, bottomRight, roles);
+}

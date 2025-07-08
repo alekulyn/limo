@@ -54,6 +54,7 @@ protected:
    * \param event The source event.
    */
   void mouseMoveEvent(QMouseEvent* event) override;
+  void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
 
 private:
   /*! \brief Toggles drag and drop support. */

@@ -104,6 +104,7 @@ public:
   bool hasChildren(const QModelIndex &parent) const override;
   bool setData(const QModelIndex &index, const QVariant &value, int role) override;
   void addSeparator();
+  Qt::ItemFlags flags(const QModelIndex &index) const override;
 
 private:
   /*! \brief Contains all mods managed by this model. */
