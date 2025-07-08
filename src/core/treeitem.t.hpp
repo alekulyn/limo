@@ -125,18 +125,6 @@ void TreeItem<T>::rotate(int from, int to) {
 }
 
 template <typename T>
-void TreeItem<T>::recategorize(int from, int to) {
-  if (from == to || from < 0 || to < 0 || from >= m_childItems.size() || to >= m_childItems.size())
-    return;
-  if (dirty) preOrderTraversal();
-  auto from_item = traversal[from+1];
-  auto to_item = traversal[to+1];
-  from_item->m_parentItem->remove(from_item);
-  to_item->emplace_back(from_item);
-  dirty = true;
-}
-
-template <typename T>
 void TreeItem<T>::insert(int position, TreeItem<T> *item) {
   m_childItems.insert(m_childItems.begin() + position, item);
   dirty = true;
@@ -167,11 +155,11 @@ void TreeItem<T>::setParent(TreeItem<T> *parent) {
   dirty = true;
 }
 
-// TODO: Finish
 template <typename T>
 void TreeItem<T>::erase(T *item) {
   if (dirty) preOrderTraversal();
   auto found = std::ranges::find_if(traversal.begin(), traversal.end(), [item](TreeItem<T> *e) { return e->getData() == item; });
+  (*found)->parent()->remove(*found);
 }
 
 template class TreeItem<DeployerEntry>;

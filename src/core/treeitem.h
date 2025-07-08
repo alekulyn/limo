@@ -64,7 +64,6 @@ public:
       return m_childItems.back();
     }
     void rotate(int from, int to);
-    void recategorize(int from, int to);
 
 private:
     std::vector<TreeItem<T> *> m_childItems;
