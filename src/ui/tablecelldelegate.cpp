@@ -28,7 +28,9 @@ void TableCellDelegate::paint(QPainter* painter,
       option.palette.color(parent_view_->hasFocus() ? QPalette::Active : QPalette::Inactive,
                            QPalette::Highlight));
   }
-  else if(sameRow(mouse_row, view_index) && !parent_view_->isInDragDrop())
+  else if(sameRow(mouse_row, view_index) &&
+    parent_view_->getMouseRegion() != parent_view_->ROW_REGION.UPPER &&
+    parent_view_->getMouseRegion() != parent_view_->ROW_REGION.LOWER)
   {
     const float color_ratio = 0.8;
     auto hl_color = option.palette.color(QPalette::Highlight);
@@ -84,21 +86,6 @@ void TableCellDelegate::paint(QPainter* painter,
       if((MOUSE_IN_LOWER && sameRow(mouse_row, view_index)) ||
             (MOUSE_IN_UPPER && sameRow(parent_view_->indexAbove(mouse_row), view_index)))
         painter->drawLine(rect.bottomLeft(), rect.bottomRight());
-    }
-    else {
-      if(sameRow(mouse_row, view_index)) {
-        const float color_ratio = 0.8;
-        auto hl_color = option.palette.color(QPalette::Highlight);
-        auto bg_color = option.palette.color(is_even_row ? QPalette::Base : QPalette::AlternateBase);
-        auto mix_color = hl_color;
-        mix_color.setRed(hl_color.red() * (1 - color_ratio) + bg_color.red() * color_ratio);
-        mix_color.setGreen(hl_color.green() * (1 - color_ratio) + bg_color.green() * color_ratio);
-        mix_color.setBlue(hl_color.blue() * (1 - color_ratio) + bg_color.blue() * color_ratio);
-        cell.palette.setBrush(QPalette::Base, QBrush(mix_color));
-        QPixmap map(rect.width(), rect.height());
-        map.fill(cell.palette.color(QPalette::Base));
-        painter->drawPixmap(rect, map);
-      }
     }
   }
   if(!parent_view_->selectionModel()->rowIntersectsSelection(view_index.row(), view_index.parent()) &&

@@ -114,7 +114,7 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
         mouse_down->setParent(target);
         emit modMoved();
       }
-      // selectionModel()->setCurrentIndex(model()->index(target.row(), 1, target.parent()),
+      // selectionModel()->setCurrentIndex(model()->index(target_idx.row(), 1, target_idx.parent()),
       //                                   QItemSelectionModel::SelectCurrent);
       updateMouseDownRow(target_idx);
     }
