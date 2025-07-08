@@ -587,7 +587,7 @@ public slots:
    * \param to_index Destination index.
    */
   void changeLoadorder(int app_id, int deployer, int from_idx, int to_idx);
-  void categorizeMod(int app_id, int deployer, int from_idx, int to_idx);
+  void commitChanges(int app_id, int deployer);
   /*!
    * \brief Updates which \ref Deployer "deployer" should manage given mods.
    * \param app_id The target \ref ModdedApplication "application".

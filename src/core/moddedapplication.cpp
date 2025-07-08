@@ -245,9 +245,8 @@ void ModdedApplication::changeLoadorder(int deployer, int from_index, int to_ind
   updateSettings(true);
 }
 
-void ModdedApplication::categorizeMod(int deployer, int from_index, int to_index)
+void ModdedApplication::commitChanges()
 {
-  // deployers_[deployer]->categorizeMod(from_index, to_index);
   updateSettings(true);
 }
 
@@ -877,7 +876,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
     manual_tags.reserve(loadorder->size());
     std::vector<std::vector<std::string>> auto_tags;
     manual_tags.reserve(loadorder->size());
-    for(auto& entry : *loadorder)
+    for(auto& entry : loadorder->getTraversalItems())
     {
       if (entry->isSeparator) continue;
       auto mod_info = static_cast<DeployerModInfo *>(entry);

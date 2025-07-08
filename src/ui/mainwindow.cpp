@@ -208,8 +208,8 @@ void MainWindow::setupConnections()
           app_manager_, &ApplicationManager::setModStatus);
   connect(this, &MainWindow::changeLoadorder,
           app_manager_, &ApplicationManager::changeLoadorder);
-  connect(this, &MainWindow::categorizeMod,
-          app_manager_, &ApplicationManager::categorizeMod);
+  connect(this, &MainWindow::commitChanges,
+          app_manager_, &ApplicationManager::commitChanges);
   connect(this, &MainWindow::deployMods,
           app_manager_, &ApplicationManager::deployMods);
   connect(this, &MainWindow::addApplication,
@@ -284,8 +284,6 @@ void MainWindow::setupConnections()
           app_manager_, &ApplicationManager::sortModsByConflicts);
   connect(ui->deployer_list, &DeployerListView::modMoved,
           this, &MainWindow::onModMoved);
-  connect(ui->deployer_list, &DeployerListView::modCategorized,
-          this, &MainWindow::onModCategorized);
   connect(this, &MainWindow::extractArchive,
           app_manager_, &ApplicationManager::extractArchive);
   connect(app_manager_, &ApplicationManager::extractionComplete,
@@ -1932,21 +1930,10 @@ void MainWindow::onGetModConflicts(std::unordered_set<int> conflicts)
   ui->reset_filter_button->setHidden(false);
 }
 
-void MainWindow::onModMoved(int from, int to)
+void MainWindow::onModMoved()
 {
-  if(from == to)
-    return;
   deployer_list_slider_pos_ = ui->deployer_list->verticalScrollBar()->sliderPosition();
-  emit changeLoadorder(currentApp(), currentDeployer(), from, to);
-  emit getDeployerInfo(currentApp(), currentDeployer());
-}
-
-void MainWindow::onModCategorized(int from, int to)
-{
-  if(from == to)
-    return;
-  deployer_list_slider_pos_ = ui->deployer_list->verticalScrollBar()->sliderPosition();
-  emit categorizeMod(currentApp(), currentDeployer(), from, to);
+  emit commitChanges(currentApp(), currentDeployer());
   emit getDeployerInfo(currentApp(), currentDeployer());
 }
 

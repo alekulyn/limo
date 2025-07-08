@@ -88,7 +88,7 @@ public:
    * \param to_index Destination index.
    */
   void changeLoadorder(int deployer, int from_index, int to_index);
-  void categorizeMod(int deployer, int from_index, int to_index);
+  void commitChanges();
   /*!
    * \brief Appends a new mod to the load order for given Deployer.
    * \param deployer The target Deployer

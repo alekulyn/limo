@@ -138,17 +138,25 @@ void TreeItem<T>::recategorize(int from, int to) {
 
 template <typename T>
 void TreeItem<T>::insert(int position, TreeItem<T> *item) {
-  if (dirty) refresh();
   m_childItems.insert(m_childItems.begin() + position, item);
   dirty = true;
 }
 
 template <typename T>
 void TreeItem<T>::remove(TreeItem<T> *item) {
-  if (dirty) refresh();
   auto it = std::ranges::find(m_childItems, item);
   if (it != m_childItems.end()) {
     m_childItems.erase(it);
+    dirty = true;
+  }
+}
+
+template <typename T>
+void TreeItem<T>::markNull(TreeItem<T> *item) {
+  if (dirty) refresh();
+  auto it = std::ranges::find(m_childItems, item);
+  if (it != m_childItems.end()) {
+    *it = nullptr;
     dirty = true;
   }
 }

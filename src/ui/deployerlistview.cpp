@@ -83,38 +83,36 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   setCursor(Qt::ArrowCursor);
   if(enable_drag_reorder_ && event_row > -1 && was_in_drag_drop_)
   {
-    QModelIndex target = QModelIndex();
-    if (mouse_row_region == ROW_REGION.UPPER || mouse_row_region == ROW_REGION.HOTSPOT)
-      target = index;
-    else if (mouse_row_region == ROW_REGION.LOWER)
-      target = indexBelow(index);
-    if(mouse_down_ < target && reorder)
-      target = indexAbove(index);
-    // target_row = std::min(target_row, model()->rowCount());
+    QModelIndex target = index;;
     // If separator expanded and mouse is in lower region, make separator's first child
     // If separator is not expanded and mouse is in lower region, make separator's next sibling
     if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
-      const auto from_row = static_cast<DeployerListProxyModel*>(model())
-                              ->mapToSource(mouse_down_)
-                              .row();
-      const auto to_row = static_cast<DeployerListProxyModel*>(model())
-                            ->mapToSource(target)
-                            .row();
+      auto target_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+      auto mouse_down_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_);
+      auto target = static_cast<TreeItem<DeployerEntry> *>(target_idx.internalPointer());
+      auto mouse_down = static_cast<TreeItem<DeployerEntry> *>(mouse_down_idx.internalPointer());
       if (reorder)
       {
-        emit modMoved(from_row, to_row);
-      }
-      else {
         rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
-        auto category_map = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
-        auto mouse_map = static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_);
-        TreeItem<DeployerEntry> *category = static_cast<TreeItem<DeployerEntry> *>(category_map.internalPointer());
-        TreeItem<DeployerEntry> *item = static_cast<TreeItem<DeployerEntry> *>(mouse_map.internalPointer());
-        category->emplace_back(item);
-        item->parent()->remove(item);
-        item->setParent(category);
-        emit modCategorized(from_row, to_row);
+        // make null and then remove after
+        mouse_down->parent()->markNull(mouse_down);
+        if (mouse_row_region == ROW_REGION.UPPER)
+          target->parent()->insert(target_idx.row(), mouse_down);
+        else if (mouse_row_region == ROW_REGION.LOWER)
+          target->parent()->insert(target_idx.row()+1, mouse_down);
+        mouse_down->parent()->remove(nullptr);
+        mouse_down->setParent(target->parent());
+        emit modMoved();
+      }
+      else if (mouse_row_region == ROW_REGION.HOTSPOT && target->getData()->isSeparator)
+      {
+        rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
+        // target is separator/category
+        target->emplace_back(mouse_down);
+        mouse_down->parent()->remove(mouse_down);
+        mouse_down->setParent(target);
+        emit modMoved();
       }
       // selectionModel()->setCurrentIndex(model()->index(target.row(), 1, target.parent()),
       //                                   QItemSelectionModel::SelectCurrent);

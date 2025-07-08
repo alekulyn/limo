@@ -478,10 +478,10 @@ void ApplicationManager::changeLoadorder(int app_id, int deployer, int from_idx,
     handleExceptions<&ModdedApplication::changeLoadorder>(app_id, deployer, from_idx, to_idx);
 }
 
-void ApplicationManager::categorizeMod(int app_id, int deployer, int from_idx, int to_idx)
+void ApplicationManager::commitChanges(int app_id, int deployer)
 {
   if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
-    handleExceptions<&ModdedApplication::categorizeMod>(app_id, deployer, from_idx, to_idx);
+    handleExceptions<&ModdedApplication::commitChanges>(app_id);
 }
 
 void ApplicationManager::updateModDeployers(int app_id,

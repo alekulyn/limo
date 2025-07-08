@@ -20,7 +20,14 @@ public:
     int row() const;
     bool setData(T *value);
     T *getData() const { return itemData; }
-    std::vector<TreeItem<T> *> preOrderTraversal();
+    std::vector<TreeItem<T> *> getTraversal() {
+      if (dirty) refresh();
+      return traversal;
+    }
+    std::vector<T *> getTraversalItems() {
+      if (dirty) refresh();
+      return traversalItems;
+    }
     void refresh() {
       traversal.clear();
       traversalItems.clear();
@@ -28,14 +35,15 @@ public:
       for (auto &item : traversal) {
         traversalItems.push_back(item->getData());
       }
+      dirty = false;
     }
     
     void emplace_back(TreeItem *data);
     void emplace_back(T *data);
     void insert(int position, TreeItem<T> *item);
     void remove(TreeItem<T> *item);
+    void markNull(TreeItem<T> *item);
     std::vector<T *>::iterator begin() {
-      if (dirty) refresh();
       return traversalItems.begin();
     }
     std::vector<T *>::iterator end() {
@@ -48,7 +56,6 @@ public:
     bool empty() const { return m_childItems.empty(); }
     void erase(T *item);
     TreeItem *operator[](int i) {
-      if (dirty) refresh();
       return m_childItems[i];
     }
     Json::Value toJson() const;
@@ -68,6 +75,8 @@ private:
     std::vector<TreeItem<T> *> traversal;
     std::vector<T *> traversalItems;
     int rows = -1;
+
+    std::vector<TreeItem<T> *> preOrderTraversal();
 };
 
 #include "treeitem.t.hpp"

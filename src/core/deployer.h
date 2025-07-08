@@ -116,7 +116,6 @@ public:
    * \param to_index Destination index.
    */
   virtual void changeLoadorder(int from_index, int to_index);
-  virtual void categorizeMod(int from_index, int to_index);
   /*!
    * \brief Appends a new mod to the load order.
    * \param mod_id Id of the mod to be added.
