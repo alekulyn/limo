@@ -369,7 +369,7 @@ public:
    * \brief Returns a vector containing valid mod actions.
    * \return For every mod: IDs of every valid mod_action which is valid for that mod.
    */
-  virtual std::vector<std::vector<int>> getValidModActions();
+  virtual std::vector<std::vector<int>> getValidModActions() const;
   /*!
    * \brief Applies the given mod action to the given mod.
    * \param action Action to be applied.

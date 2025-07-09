@@ -317,7 +317,7 @@ bool PluginDeployer::idsAreSourceReferences() const
   return true;
 }
 
-std::vector<std::vector<int>> PluginDeployer::getValidModActions()
+std::vector<std::vector<int>> PluginDeployer::getValidModActions() const
 {
   std::vector<std::vector<int>> valid_actions;
   for(int _ = 0; _ < plugins_.size(); _++)

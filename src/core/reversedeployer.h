@@ -285,7 +285,7 @@ public:
    * \brief Returns a vector containing valid mod actions.
    * \return For every mod: IDs of every valid mod_action which is valid for that mod.
    */
-  virtual std::vector<std::vector<int>> getValidModActions() override;
+  virtual std::vector<std::vector<int>> getValidModActions() const override;
 
 private:
   /*! \brief Name of the file containing paths of ignored files. */

@@ -971,7 +971,7 @@ std::vector<std::pair<std::string, std::string>> Deployer::getModActions() const
   return {};
 }
 
-std::vector<std::vector<int>> Deployer::getValidModActions()
+std::vector<std::vector<int>> Deployer::getValidModActions() const
 {
   std::vector<std::vector<int>> valid_actions;
   for(int _ = 0; _ < loadorders_[current_profile_].size(); _++)

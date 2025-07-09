@@ -574,7 +574,7 @@ void ReverseDeployer::addModToIgnoreList(int mod_id)
   writeManagedFiles();
 }
 
-std::vector<std::vector<int>> ReverseDeployer::getValidModActions()
+std::vector<std::vector<int>> ReverseDeployer::getValidModActions() const
 {
   std::vector<std::vector<int>> valid_actions;
   for(int _ = 0; _ < current_loadorder_.size(); _++)

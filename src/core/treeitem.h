@@ -50,7 +50,7 @@ public:
       if (dirty) refresh();
       return traversalItems.end();
     }
-    int size() {
+    int size() const {
       return m_childItems.size();
     }
     bool empty() const { return m_childItems.empty(); }
