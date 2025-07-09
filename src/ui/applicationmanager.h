@@ -603,7 +603,7 @@ public slots:
    * \param deployer The target Deployer
    * \param mod_id Id of the mod to be removed.
    */
-  void removeModFromDeployer(int app_id, int deployer, int mod_id);
+  void removeModFromDeployer(int app_id, int deployer, void *node_ptr);
   /*!
    * \brief Enables or disables the given mod in the load order for given Deployer
    * for given \ref ModdedApplication "application".

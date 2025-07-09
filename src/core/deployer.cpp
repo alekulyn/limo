@@ -146,6 +146,21 @@ bool Deployer::addMod(int mod_id, bool enabled, bool update_conflicts)
   return true;
 }
 
+bool Deployer::removeNode(void *node_ptr)
+{
+  // auto iter = std::find_if(loadorders_[current_profile_].begin(),
+  //                          loadorders_[current_profile_].end(),
+  //                          [mod_id](auto entry) { return entry->id == mod_id; });
+  // if(iter == loadorders_[current_profile_].end())
+  //   return false;
+  // loadorders_[current_profile_].remove(static_cast<TreeItem<DeployerEntry> *>(node_ptr));
+  auto item = static_cast<TreeItem<DeployerEntry> *>(node_ptr);
+  item->parent()->remove(static_cast<TreeItem<DeployerEntry> *>(node_ptr));
+  if(auto_update_conflict_groups_)
+    updateConflictGroups();
+  return true;
+}
+
 bool Deployer::removeMod(int mod_id)
 {
   auto iter = std::find_if(loadorders_[current_profile_].begin(),

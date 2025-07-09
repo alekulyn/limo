@@ -134,7 +134,16 @@ template <typename T>
 void TreeItem<T>::remove(TreeItem<T> *item) {
   auto it = std::ranges::find(m_childItems, item);
   if (it != m_childItems.end()) {
+    // If the item has children, insert them at the current position
+    auto item = *it;
     m_childItems.erase(it);
+    if (item != nullptr && item->childCount() > 0) {
+      for (auto &child : item->m_childItems) {
+        auto index = std::distance(std::begin(m_childItems), it);
+        this->insert(index, child);
+        child->setParent(m_parentItem);
+      }
+    }
     dirty = true;
   }
 }

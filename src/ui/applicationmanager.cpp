@@ -493,11 +493,11 @@ void ApplicationManager::updateModDeployers(int app_id,
   emit completedOperations("Deployers updated");
 }
 
-void ApplicationManager::removeModFromDeployer(int app_id, int deployer, int mod_id)
+void ApplicationManager::removeModFromDeployer(int app_id, int deployer, void *node_ptr)
 {
   if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
-    handleExceptions<&ModdedApplication::removeModFromDeployer>(
-      app_id, deployer, mod_id, true, std::optional<ProgressNode*>{});
+    handleExceptions<&ModdedApplication::removeNodeFromDeployer>(
+      app_id, deployer, node_ptr, true, std::optional<ProgressNode*>{});
   emit completedOperations("Deployers updated");
 }
 

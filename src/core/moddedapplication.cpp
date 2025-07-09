@@ -271,6 +271,26 @@ void ModdedApplication::addModToDeployer(int deployer,
   }
 }
 
+void ModdedApplication::removeNodeFromDeployer(int deployer,
+                                              void *node_ptr,
+                                              bool update_conflicts,
+                                              std::optional<ProgressNode*> progress_node)
+{
+  if(!deployers_[deployer]->isAutonomous())
+  {
+    const bool was_removed = deployers_[deployer]->removeNode(node_ptr);
+    ProgressNode node(progress_callback_);
+    if(update_conflicts && was_removed)
+      deployers_[deployer]->updateConflictGroups(progress_node ? progress_node : &node);
+    else if(progress_node)
+    {
+      (*progress_node)->setTotalSteps(1);
+      (*progress_node)->advance();
+    }
+    updateSettings(true);
+  }
+}
+
 void ModdedApplication::removeModFromDeployer(int deployer,
                                               int mod_id,
                                               bool update_conflicts,

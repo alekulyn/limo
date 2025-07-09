@@ -107,6 +107,10 @@ public:
    * \param update_conflicts Updates the target deployers conflict groups only if this is true.
    * \param progress_node Used to inform about the current progress.
    */
+  void removeNodeFromDeployer(int deployer,
+                             void *node_ptr,
+                             bool update_conflicts = true,
+                             std::optional<ProgressNode*> progress_node = {});
   void removeModFromDeployer(int deployer,
                              int mod_id,
                              bool update_conflicts = true,

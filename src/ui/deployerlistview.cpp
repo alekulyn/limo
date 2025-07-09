@@ -9,6 +9,7 @@
 DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
 {
   setEditTriggers(QAbstractItemView::NoEditTriggers);
+  setTreePosition(1);
 }
 
 void DeployerListView::mousePressEvent(QMouseEvent* event)

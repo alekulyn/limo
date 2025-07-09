@@ -2275,8 +2275,9 @@ void MainWindow::on_deploy_button_clicked()
 
 void MainWindow::on_deployer_add_separator_button_clicked()
 {
-  std::cout << "Adding separator to deployer list" << std::endl;
   deployer_model_->addSeparator();
+  emit commitChanges(currentApp(), currentDeployer());
+  emit getDeployerInfo(currentApp(), currentDeployer());
 }
 
 void MainWindow::onAddAppButtonClicked()
@@ -2440,7 +2441,9 @@ void MainWindow::on_actionremove_from_deployer_triggered()
   setBusyStatus(true);
   emit removeModFromDeployer(currentApp(),
                              currentDeployer(),
-                             deployer_model_->data(index, ModListModel::mod_id_role).toInt());
+                             index.internalPointer());
+                             // deployer_model_->data(index, ModListModel::mod_id_role).toInt());
+  // emit deployer_list_proxy_->dataChanged(index, index);
   emit getDeployerInfo(currentApp(), currentDeployer());
 }
 

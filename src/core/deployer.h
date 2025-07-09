@@ -129,6 +129,7 @@ public:
    * \param mod_id Id of the mod to be removed.
    * \return True iff the mod has been removed.
    */
+  virtual bool removeNode(void *node_ptr);
   virtual bool removeMod(int mod_id);
   /*!
    * \brief Enables or disables the given mod in the load order.

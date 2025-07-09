@@ -1480,11 +1480,6 @@
     <string>Change Position</string>
    </property>
   </action>
-  <action name="actionadd_separator">
-   <property name="text">
-    <string>Add Separator</string>
-   </property>
-  </action>
   <action name="actionAdd_to_Group">
    <property name="icon">
     <iconset theme="list-add"/>

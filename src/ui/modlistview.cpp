@@ -197,7 +197,7 @@ void ModListView::mouseDoubleClickEvent(QMouseEvent* event)
       event_col == ModListModel::version_col &&
         columnViewportPosition(event_col) + columnWidth(event_col) - 18 >= event->x()) &&
      static_cast<ModListProxyModel*>(model())->isEditable())
-    edit(model()->index(event_row, event_col));
+    edit(index);
 }
 
 void ModListView::leaveEvent(QEvent* event)

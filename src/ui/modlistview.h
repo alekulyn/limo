@@ -79,7 +79,7 @@ public:
 
 protected:
   /*! \brief Last row on which a mouse button has been pressed. */
-  QModelIndex mouse_down_ = QModelIndex();
+  QPersistentModelIndex mouse_down_ = QModelIndex();
   /*! \brief Last row over which the cursor hovered. */
   QPersistentModelIndex mouse_hover_ = QModelIndex();
   /*! \brief Determines if buttons react to inputs. */

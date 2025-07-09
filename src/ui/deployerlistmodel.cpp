@@ -58,10 +58,14 @@ int DeployerListModel::columnCount(const QModelIndex& parent) const
 
 QVariant DeployerListModel::data(const QModelIndex& index, int role) const
 {
+  if (!index.isValid())
+    return QVariant();
   const int row = index.row();
   const int col = index.column();
   auto entry = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
   auto data = entry->getData();
+  if (role == Qt::CheckStateRole && index.column() == 1)
+    return static_cast<int>( static_cast<DeployerModInfo *>(data)->enabled ? Qt::Checked : Qt::Unchecked );
   if(role == Qt::BackgroundRole)
   {
     if(col == status_col && !data->isSeparator)
@@ -128,7 +132,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
       return static_cast<DeployerModInfo *>(data)->id;
     return row;
   }
-  if(role == ModListModel::mod_name_role)
+  if(role == ModListModel::mod_name_role || role == Qt::EditRole)
     return data->name.c_str();
   if(role == mod_tags_role)
   {
@@ -231,11 +235,15 @@ QModelIndex DeployerListModel::parent(const QModelIndex &index) const
 bool DeployerListModel::hasChildren(const QModelIndex &parent = QModelIndex()) const
 {
   if (deployer_info_.supports_expandable) {
-    auto item = getItem(parent);
-    if (item != nullptr && item->getData()->isSeparator) {
+    if (parent.isValid()) {
+      auto item = static_cast<TreeItem<DeployerModInfo> *>(parent.internalPointer());
+      if (item != nullptr && item->getData()->isSeparator) {
+        return true;
+      }
+      return false;
+    } else {
       return true;
     }
-    return false;
   } else {
     if (!parent.isValid()) {
       return true;
@@ -250,7 +258,7 @@ bool DeployerListModel::setData(const QModelIndex &index, const QVariant &value,
     if (role != Qt::EditRole)
         return false;
 
-    auto item = getItem(index)->getData();
+    auto item = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer())->getData();
     item->name = value.toString().toStdString();
     emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
 
@@ -278,8 +286,13 @@ void DeployerListModel::addSeparator()
 
 Qt::ItemFlags DeployerListModel::flags(const QModelIndex &index) const
 {
-    if (!index.isValid() || static_cast<TreeItem<DeployerEntry> *>(index.internalPointer())->getData()->isSeparator == false)
-        return Qt::NoItemFlags;
+  if (!index.isValid())
+    return Qt::NoItemFlags;
 
-    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+  auto flags = QAbstractItemModel::flags(index);
+  if (static_cast<TreeItem<DeployerEntry> *>(index.internalPointer())->getData()->isSeparator == false)
+    flags |= Qt::ItemIsUserCheckable;
+  else
+    flags |= Qt::ItemIsEditable;
+  return flags;
 }
