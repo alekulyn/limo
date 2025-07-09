@@ -226,9 +226,9 @@ QModelIndex DeployerListModel::parent(const QModelIndex &index) const
     return {};
 
   auto *childItem = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
-  TreeItem<DeployerEntry>  *parentItem = childItem->parent();
+  TreeItem<DeployerEntry> *parentItem = childItem->parent();
 
-  return parentItem != deployer_info_.root
+  return parentItem != deployer_info_.root && parentItem != nullptr
   ? createIndex(parentItem->row(), 0, parentItem) : QModelIndex{};
 }
 
