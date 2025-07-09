@@ -493,7 +493,7 @@ void ApplicationManager::updateModDeployers(int app_id,
   emit completedOperations("Deployers updated");
 }
 
-void ApplicationManager::removeModFromDeployer(int app_id, int deployer, void *node_ptr)
+void ApplicationManager::removeNodeFromDeployer(int app_id, int deployer, void *node_ptr)
 {
   if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
     handleExceptions<&ModdedApplication::removeNodeFromDeployer>(

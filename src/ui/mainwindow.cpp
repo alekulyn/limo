@@ -229,7 +229,7 @@ void MainWindow::setupConnections()
   connect(this, &MainWindow::removeApplication,
           app_manager_, &ApplicationManager::removeApplication);
   connect(this, &MainWindow::removeModFromDeployer,
-          app_manager_, &ApplicationManager::removeModFromDeployer);
+          app_manager_, &ApplicationManager::removeNodeFromDeployer);
   connect(app_manager_, &ApplicationManager::completedOperations,
           this, &MainWindow::onCompletedOperations);
   connect(this, &MainWindow::changeModName,

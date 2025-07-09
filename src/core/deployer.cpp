@@ -673,10 +673,10 @@ void Deployer::updateConflictGroups(std::optional<ProgressNode*> progress_node)
   std::vector<int> non_conflicting;
   // create groups
   if(progress_node)
-    (*progress_node)->setTotalSteps(loadorders_[current_profile_].size());
-  for(const auto& entry : loadorders_[current_profile_])
+    (*progress_node)->setTotalSteps(loadorders_[current_profile_].getTraversalItems().size());
+  for(const auto& entry : loadorders_[current_profile_].getTraversalItems())
   {
-    if(!checkModPathExistsAndMaybeLogError(entry->id))
+    if(entry->isSeparator || !checkModPathExistsAndMaybeLogError(entry->id))
       continue;
     std::string base_path = (source_path_ / std::to_string(entry->id)).string();
     for(const auto& dir_entry : sfs::recursive_directory_iterator(base_path))

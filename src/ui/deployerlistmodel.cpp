@@ -41,8 +41,6 @@ int DeployerListModel::rowCount(const QModelIndex& parent) const
 {
   if (!parent.isValid() && deployer_info_.root == nullptr)
     return 0;
-  // if (parent.column() > 0)
-  //   return 0;
 
   const TreeItem<DeployerEntry> *parentItem = parent.isValid()
     ? static_cast<const TreeItem<DeployerEntry> *>(parent.internalPointer())
@@ -101,7 +99,6 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
         if(!deployer_info_.ids_are_source_references)
           return id;
         if(id == -1)
-          // return deployer_info_.source_mod_names_[row].c_str();
           return static_cast<DeployerModInfo *>(data)->sourceName.c_str();
         return std::format("{} [{}]", deployer_info_.source_mod_names_[row], id).c_str();
       }

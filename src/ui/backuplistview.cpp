@@ -1,5 +1,6 @@
 #include "backuplistview.h"
 #include "backuplistmodel.h"
+#include "qmodelindexcheck.h"
 
 
 BackupListView::BackupListView(QWidget* parent) : ModListView(parent) {}
@@ -48,7 +49,7 @@ void BackupListView::mouseDoubleClickEvent(QMouseEvent* event)
   const int event_col = index.column();
   const bool is_valid_row =
     !(event_row == index.data(BackupListModel::num_targets_role).toInt() || event_row == -1);
-  if(event_row == mouse_down_.row() && index.parent() == mouse_down_.parent() && is_valid_row && event->button() == Qt::LeftButton &&
+  if(sameRow(index, mouse_down_) && is_valid_row && event->button() == Qt::LeftButton &&
      (event_col == BackupListModel::target_col ||
       event_col == BackupListModel::backup_col &&
         columnViewportPosition(event_col) + columnWidth(event_col) - 18 >= event->x()) &&
