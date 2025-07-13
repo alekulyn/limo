@@ -89,17 +89,18 @@ void Deployer::setLoadorder(Json::Value entry, TreeItem<DeployerEntry> &current)
 {
   if(entry.isObject() && entry.isMember("name"))
   {
-    current.emplace_back(new DeployerEntry(true, entry["name"].asString()));
-    for (const auto& sub_entry : entry["children"])
-    {
-      setLoadorder(sub_entry, *current.back());
+    if (entry.isMember("status")) {
+      current.emplace_back(
+        new DeployerModInfo(false, entry["name"].asString(), "", entry["id"].asInt(),
+                            entry["status"].asBool()));
     }
-  }
-  else if(entry.isObject() && entry.isMember("status"))
-  {
-    current.emplace_back(
-      new DeployerModInfo(false, entry["name"].asString(), "", entry["id"].asInt(),
-                          entry["status"].asBool()));
+    else {
+      current.emplace_back(new DeployerEntry(true, entry["name"].asString()));
+      for (const auto& sub_entry : entry["children"])
+      {
+        setLoadorder(sub_entry, *current.back());
+      }
+    }
   }
 }
 
