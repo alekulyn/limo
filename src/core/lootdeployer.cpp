@@ -187,7 +187,8 @@ void LootDeployer::sortModsByConflicts(std::optional<ProgressNode*> progress_nod
   if(!sfs::exists(prelude_path))
     prelude_path = "";
   loot_handle->GetDatabase().LoadMasterlistWithPrelude(master_list_path, prelude_path);
-  loot_handle->GetDatabase().LoadUserlist(user_list_path);
+  if(!sfs::exists(user_list_path))
+    loot_handle->GetDatabase().LoadUserlist(user_list_path);
   if(progress_node)
     (*progress_node)->child(1).advance();
 
