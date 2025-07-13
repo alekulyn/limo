@@ -106,10 +106,12 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     }
     if(col == tags_col)
     {
-      if(tags_.empty())
-        return "";
+      // if(tags_.empty())
+      //   return "";
       QStringList tags;
-      for(const auto& tag : tags_.at(row))
+      for(const auto& tag : static_cast<DeployerModInfo *>(data)->auto_tags)
+        tags.append(tag.c_str());
+      for(const auto& tag : static_cast<DeployerModInfo *>(data)->manual_tags)
         tags.append(tag.c_str());
       tags.sort(Qt::CaseInsensitive);
       return tags.join(", ");
@@ -134,7 +136,11 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
   if(role == mod_tags_role)
   {
     QStringList tags;
-    for(const auto& tag : tags_.at(row))
+    // for(const auto& tag : tags_.at(row))
+    //   tags.append(tag.c_str());
+    for(const auto& tag : static_cast<DeployerModInfo *>(data)->auto_tags)
+      tags.append(tag.c_str());
+    for(const auto& tag : static_cast<DeployerModInfo *>(data)->manual_tags)
       tags.append(tag.c_str());
     return tags;
   }
@@ -159,7 +165,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
 void DeployerListModel::setDeployerInfo(const DeployerInfo& info)
 {
   emit layoutAboutToBeChanged();
-  tags_.clear();
+  // tags_.clear();
   // if(info.manual_tags.size() == 0)
   // {
   //   for(const auto& tag : info.auto_tags)

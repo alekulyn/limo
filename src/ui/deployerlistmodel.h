@@ -112,7 +112,7 @@ private:
   /*! \brief Maps mod ids to the color used to display their names. */
   std::map<int, QBrush> text_colors_;
   /*! \brief For every mod: A vector containing every tag added to that mod. */
-  std::vector<std::vector<std::string>> tags_;
+  // std::vector<std::vector<std::string>> tags_;
   TreeItem<DeployerEntry> *getItem(const QModelIndex &index) const;
 };
 

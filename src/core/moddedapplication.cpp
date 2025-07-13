@@ -705,7 +705,7 @@ void ModdedApplication::removeModFromGroup(int mod_id,
       for(int prof = 0; prof < profile_names_.size(); prof++)
       {
         deployers_[depl]->setProfile(prof);
-        auto loadorder = *deployers_[depl]->getLoadorder();
+        auto loadorder = deployers_[depl]->getLoadorder()->getTraversalItems();
         auto iter = str::find_if(
           loadorder, [mod_id](const auto& entry) { return entry->id == mod_id; });
         if(iter != loadorder.end())
@@ -892,10 +892,6 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
     auto loadorder = deployers_[deployer]->getLoadorder();
     std::vector<std::string> mod_names;
     mod_names.reserve(loadorder->size());
-    std::vector<std::vector<std::string>> manual_tags;
-    manual_tags.reserve(loadorder->size());
-    std::vector<std::vector<std::string>> auto_tags;
-    manual_tags.reserve(loadorder->size());
     for(auto& entry : loadorder->getTraversalItems())
     {
       if (entry->isSeparator) continue;
@@ -904,14 +900,21 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
       entry->name = mod_name;
       mod_names.push_back(mod_name);
       if(manual_tag_map_.contains(mod_info->id))
-        manual_tags.push_back(manual_tag_map_.at(mod_info->id));
+      {
+        auto map = manual_tag_map_.at(mod_info->id);
+        mod_info->manual_tags.insert(mod_info->manual_tags.end(),
+                      map.begin(), map.end());
+      }
       else
-        manual_tags.push_back({});
+        mod_info->manual_tags.push_back({});
 
-      if(auto_tag_map_.contains(mod_info->id))
-        auto_tags.push_back(auto_tag_map_.at(mod_info->id));
+      if(auto_tag_map_.contains(mod_info->id)) {
+        auto map = auto_tag_map_.at(mod_info->id);
+        mod_info->auto_tags.insert(mod_info->auto_tags.end(),
+                            map.begin(), map.end());
+      }
       else
-        auto_tags.push_back({});
+        mod_info->auto_tags.push_back({});
     }
     for(const auto& tag : auto_tags_)
     {
@@ -921,11 +924,8 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
         mods_per_tag[tag.getName()] = tag.getNumMods();
     }
     return {
-             // loadorder,
              deployers_[deployer]->getConflictGroups(),
              false,
-             // manual_tags,
-             // auto_tags,
              mods_per_tag,
              loadorder,
              false,
@@ -984,12 +984,9 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
       has_ignored_files = depl->getNumIgnoredFiles() != 0;
     }
     return {
-             // deployers_[deployer]->getLoadorder(),
              deployers_[deployer]->getConflictGroups(),
              true,
              {},
-             // deployers_[deployer]->getAutoTags(),
-             // deployers_[deployer]->getAutoTagMap(),
              root,
              separate_dirs,
              has_ignored_files,

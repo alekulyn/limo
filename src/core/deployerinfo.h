@@ -16,8 +16,6 @@
  */
 struct DeployerInfo
 {
-  /*! \brief The \ref Deployer "deployer's" load order. */
-  // std::vector<std::tuple<int, bool>> loadorder;
   /*! \brief Contains groups of mods which conflict with each other. */
   std::vector<std::vector<int>> conflict_groups;
   /*! \brief If true: Deployer manages its own mods and does not rely on ModdedApplication. */
