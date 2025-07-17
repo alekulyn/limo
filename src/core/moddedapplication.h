@@ -88,6 +88,7 @@ public:
    * \param to_index Destination index.
    */
   void changeLoadorder(int deployer, int from_index, int to_index);
+  void commitChanges();
   /*!
    * \brief Appends a new mod to the load order for given Deployer.
    * \param deployer The target Deployer
@@ -106,6 +107,10 @@ public:
    * \param update_conflicts Updates the target deployers conflict groups only if this is true.
    * \param progress_node Used to inform about the current progress.
    */
+  void removeNodeFromDeployer(int deployer,
+                             void *node_ptr,
+                             bool update_conflicts = true,
+                             std::optional<ProgressNode*> progress_node = {});
   void removeModFromDeployer(int deployer,
                              int mod_id,
                              bool update_conflicts = true,
@@ -144,7 +149,7 @@ public:
    * \param deployer The target Deployer.
    * \return The load order.
    */
-  std::vector<std::tuple<int, bool>> getLoadorder(int deployer) const;
+  TreeItem<DeployerEntry> *getLoadorder(int deployer) const;
   /*!
    * \brief Getter for the path to the staging directory. This is where all installed
    * mods are stored.

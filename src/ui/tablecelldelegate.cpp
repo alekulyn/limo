@@ -1,8 +1,8 @@
 #include "tablecelldelegate.h"
 #include "modlistmodel.h"
+#include "qmodelindexcheck.h"
 #include <QApplication>
 #include <QPainter>
-
 
 TableCellDelegate::TableCellDelegate(QSortFilterProxyModel* proxy, QObject* parent) :
   QStyledItemDelegate{ parent }, proxy_model_(proxy),
@@ -18,9 +18,9 @@ void TableCellDelegate::paint(QPainter* painter,
   QRect rect = option.rect;
   cell.rect = rect;
   const bool is_even_row = view_index.row() % 2 == 0;
-  const int mouse_row = parent_view_->getHoverRow();
+  const auto mouse_row = parent_view_->getHoverRow();
   const bool row_is_selected =
-    parent_view_->selectionModel()->rowIntersectsSelection(view_index.row());
+    parent_view_->selectionModel()->rowIntersectsSelection(view_index.row(), view_index.parent());
   if(row_is_selected)
   {
     cell.palette.setBrush(
@@ -28,7 +28,9 @@ void TableCellDelegate::paint(QPainter* painter,
       option.palette.color(parent_view_->hasFocus() ? QPalette::Active : QPalette::Inactive,
                            QPalette::Highlight));
   }
-  else if(mouse_row == view_index.row() && !parent_view_->isInDragDrop())
+  else if(sameRow(mouse_row, view_index) &&
+    parent_view_->getMouseRegion() != parent_view_->ROW_REGION.UPPER &&
+    parent_view_->getMouseRegion() != parent_view_->ROW_REGION.LOWER)
   {
     const float color_ratio = 0.8;
     auto hl_color = option.palette.color(QPalette::Highlight);
@@ -75,14 +77,18 @@ void TableCellDelegate::paint(QPainter* painter,
   }
   if(parent_view_->isInDragDrop())
   {
-    if(parent_view_->mouseInUpperHalfOfRow() && mouse_row == view_index.row() ||
-       !parent_view_->mouseInUpperHalfOfRow() && mouse_row + 1 == view_index.row())
-      painter->drawLine(rect.topLeft(), rect.topRight());
-    else if(!parent_view_->mouseInUpperHalfOfRow() && mouse_row == view_index.row() ||
-            parent_view_->mouseInUpperHalfOfRow() && mouse_row - 1 == view_index.row())
-      painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+    if (parent_view_->getMouseRegion() != parent_view_->ROW_REGION.HOTSPOT) {
+      bool MOUSE_IN_UPPER = parent_view_->getMouseRegion() == parent_view_->ROW_REGION.UPPER;
+      bool MOUSE_IN_LOWER = parent_view_->getMouseRegion() == parent_view_->ROW_REGION.LOWER;
+      if((MOUSE_IN_UPPER && sameRow(mouse_row, view_index)) ||
+            (MOUSE_IN_LOWER && sameRow(parent_view_->indexBelow(mouse_row), view_index)))
+        painter->drawLine(rect.topLeft(), rect.topRight());
+      if((MOUSE_IN_LOWER && sameRow(mouse_row, view_index)) ||
+            (MOUSE_IN_UPPER && sameRow(parent_view_->indexAbove(mouse_row), view_index)))
+        painter->drawLine(rect.bottomLeft(), rect.bottomRight());
+    }
   }
-  if(!parent_view_->selectionModel()->rowIntersectsSelection(view_index.row()) &&
+  if(!parent_view_->selectionModel()->rowIntersectsSelection(view_index.row(), view_index.parent()) &&
      parent_view_->selectionModel()->currentIndex().row() == view_index.row())
   {
     QStyleOptionFocusRect indicator;

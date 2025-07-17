@@ -2,27 +2,68 @@
 #include "deployerlistmodel.h"
 #include "deployerlistproxymodel.h"
 #include "modlistmodel.h"
+#include "hotspot.h"
+#include "qmodelindexcheck.h"
 #include <QGuiApplication>
-
 
 DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
 {
   setEditTriggers(QAbstractItemView::NoEditTriggers);
+  setTreePosition(1);
 }
 
 void DeployerListView::mousePressEvent(QMouseEvent* event)
 {
   const auto index = indexAt(event->pos());
   const int event_row = index.row();
-  const int prev_row = selectionModel()->currentIndex().row();
+  const auto prev_index = selectionModel()->currentIndex();
   selectionModel()->clearSelection();
-  const auto selection = QItemSelection(model()->index(event_row, 1),
-                                        model()->index(event_row, model()->columnCount() - 1));
+  const auto selection = QItemSelection(model()->index(event_row, 1, index.parent()),
+                                        model()->index(event_row, model()->columnCount() - 1, index.parent()));
   selectionModel()->select(selection, QItemSelectionModel::Select);
-  selectionModel()->setCurrentIndex(model()->index(event_row, 1),
+  selectionModel()->setCurrentIndex(model()->index(event_row, 1, index.parent()),
                                     QItemSelectionModel::NoUpdate);
-  updateMouseDownRow(event_row);
-  updateRow(prev_row);
+  updateMouseDownRow(index);
+  updateRow(prev_index);
+}
+
+void DeployerListView::mouseMoveEvent(QMouseEvent* event)
+{
+  const auto index = indexAt(event->pos());
+  const int row = index.row();
+  if(QGuiApplication::mouseButtons().testFlag(Qt::LeftButton) && enable_drag_reorder_ &&
+     mouse_down_.isValid())
+  {
+    setCursor(Qt::ClosedHandCursor);
+    is_in_drag_drop_ = true;
+  }
+  int mouse_row_region_curr = ROW_REGION.NONE;
+  auto rect = visualRect(indexAt(event->pos()));
+
+  auto rowHeight = rect.bottom() - rect.top();
+  if(inHotspot(rect, event->pos()))
+    mouse_row_region_curr = ROW_REGION.HOTSPOT;
+  else if(event->pos().y() < rect.top() + rowHeight / 2)
+    mouse_row_region_curr = ROW_REGION.UPPER;
+  else if(event->pos().y() > rect.top() + rowHeight / 2)
+    mouse_row_region_curr = ROW_REGION.LOWER;
+
+  if(mouse_row_region_curr != mouse_row_region)
+  {
+    mouse_row_region = mouse_row_region_curr;
+    if(is_in_drag_drop_)
+    {
+      for (const auto i : {
+        indexAbove(indexAbove(index)),
+        indexAbove(index),
+        index,
+        indexBelow(index),
+        indexBelow(indexBelow(index)) }) {
+        updateRow(i);
+      }
+    }
+  }
+  updateMouseHoverRow(index);
 }
 
 void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
@@ -30,71 +71,74 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   const auto index = indexAt(event->pos());
   const int event_row = index.row();
   const int event_col = index.column();
+  auto rect = visualRect(index);
+
+  bool reorder = true;
+  if (inHotspot(rect, event->pos()))
+  {
+    reorder = false;
+  }
 
   const bool was_in_drag_drop_ = is_in_drag_drop_;
   is_in_drag_drop_ = false;
   setCursor(Qt::ArrowCursor);
   if(enable_drag_reorder_ && event_row > -1 && was_in_drag_drop_)
   {
-    int target_row = mouse_in_upper_half_of_row_ ? event_row : event_row + 1;
-    if(mouse_down_row_ < target_row)
-      target_row--;
-    target_row = std::min(target_row, model()->rowCount());
-    if(target_row != mouse_down_row_ && rowIndexIsValid(target_row) &&
-       rowIndexIsValid(mouse_down_row_))
+    QModelIndex target = index;;
+    // If separator expanded and mouse is in lower region, make separator's first child
+    // If separator is not expanded and mouse is in lower region, make separator's next sibling
+    if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
-      const auto from_row = static_cast<DeployerListProxyModel*>(model())
-                              ->mapToSource(model()->index(mouse_down_row_, 0))
-                              .row();
-      const auto to_row = static_cast<DeployerListProxyModel*>(model())
-                            ->mapToSource(model()->index(target_row, 0))
-                            .row();
-      emit modMoved(from_row, to_row);
-      selectionModel()->setCurrentIndex(model()->index(target_row, 1),
-                                        QItemSelectionModel::SelectCurrent);
-      updateMouseDownRow(target_row);
+      auto target_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+      auto mouse_down_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_);
+      auto target = static_cast<TreeItem<DeployerEntry> *>(target_idx.internalPointer());
+      auto mouse_down = static_cast<TreeItem<DeployerEntry> *>(mouse_down_idx.internalPointer());
+      if (reorder)
+      {
+        rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
+        // make null and then remove after
+        mouse_down->parent()->markNull(mouse_down);
+        if (mouse_row_region == ROW_REGION.UPPER)
+          target->parent()->insert(target_idx.row(), mouse_down);
+        else if (mouse_row_region == ROW_REGION.LOWER)
+          target->parent()->insert(target_idx.row()+1, mouse_down);
+        mouse_down->parent()->remove(nullptr);
+        mouse_down->setParent(target->parent());
+        emit modMoved();
+      }
+      else if (mouse_row_region == ROW_REGION.HOTSPOT && target->getData()->isSeparator)
+      {
+        rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
+        // target is separator/category
+        target->emplace_back(mouse_down);
+        mouse_down->parent()->remove(mouse_down);
+        mouse_down->setParent(target);
+        emit modMoved();
+      }
+      // selectionModel()->setCurrentIndex(model()->index(target_idx.row(), 1, target_idx.parent()),
+      //                                   QItemSelectionModel::SelectCurrent);
+      updateMouseDownRow(target_idx);
     }
     else
     {
-      updateRow(event_row);
-      updateRow(event_row - 1);
-      updateRow(event_row + 1);
+      updateRow(index);
+      updateRow(indexAbove(index));
+      updateRow(indexBelow(index));
     }
   }
-  if(event_row != mouse_down_row_)
-    updateMouseHoverRow(-1);
+  if(!sameRow(index, mouse_down_))
+    updateMouseHoverRow(QModelIndex());
   else if(event_col == DeployerListModel::status_col && event_row > -1 &&
           event_row < model()->rowCount() && enable_buttons_ && !was_in_drag_drop_)
   {
-    emit modStatusChanged(model()->data(index, ModListModel::mod_id_role).toInt(),
-                          !model()->data(index, DeployerListModel::mod_status_role).toBool());
+    auto mod_status_data = model()->data(index, Qt::DisplayRole).toString();
+    if (mod_status_data == "")
+      isExpanded(index) ? collapse(index) : expand(index);
+    else
+      emit modStatusChanged(model()->data(index, ModListModel::mod_id_role).toInt(),
+                            !model()->data(index, DeployerListModel::mod_status_role).toBool());
   }
-  //  QTableView::mouseReleaseEvent(event);
-}
-
-void DeployerListView::mouseMoveEvent(QMouseEvent* event)
-{
-  const int row = indexAt(event->pos()).row();
-  if(QGuiApplication::mouseButtons().testFlag(Qt::LeftButton) && enable_drag_reorder_ &&
-     mouse_down_row_ != -1)
-  {
-    setCursor(Qt::ClosedHandCursor);
-    is_in_drag_drop_ = true;
-  }
-  bool mouse_in_upper_half = true;
-  if(event->pos().y() > rowViewportPosition(row) + rowHeight(row) / 2)
-    mouse_in_upper_half = false;
-  if(mouse_in_upper_half != mouse_in_upper_half_of_row_)
-  {
-    mouse_in_upper_half_of_row_ = mouse_in_upper_half;
-    if(is_in_drag_drop_)
-    {
-      updateRow(row);
-      updateRow(row - 1);
-      updateRow(row + 1);
-    }
-  }
-  updateMouseHoverRow(row);
+   QTreeView::mouseReleaseEvent(event);
 }
 
 bool DeployerListView::enableDragReorder() const
@@ -105,4 +149,11 @@ bool DeployerListView::enableDragReorder() const
 void DeployerListView::setEnableDragReorder(bool enabled)
 {
   enable_drag_reorder_ = enabled;
+}
+
+void DeployerListView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) 
+{
+  updateRow(topLeft);
+  emit modMoved();
+  QTreeView::dataChanged(topLeft, bottomRight, roles);
 }

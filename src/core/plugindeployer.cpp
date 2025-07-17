@@ -162,22 +162,22 @@ void PluginDeployer::setConflictGroups(const std::vector<std::vector<int>>& newC
          "This will have no effect.");
 }
 
-int PluginDeployer::getNumMods() const
+int PluginDeployer::getNumMods()
 {
   return plugins_.size();
 }
 
-std::vector<std::tuple<int, bool>> PluginDeployer::getLoadorder() const
+TreeItem<DeployerEntry> *PluginDeployer::getLoadorder()
 {
-  std::vector<std::tuple<int, bool>> loadorder;
-  loadorder.reserve(plugins_.size());
+  TreeItem<DeployerEntry> *loadorder = new TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  // loadorder.reserve(plugins_.size());
   for(const auto& [plugin, enabled] : plugins_)
   {
     auto iter = source_mods_.find(plugin);
     int id = -1;
     if(iter != source_mods_.end())
       id = iter->second;
-    loadorder.emplace_back(id, enabled);
+    loadorder->emplace_back(new DeployerModInfo(false, plugin, "", id, enabled));
   }
   return loadorder;
 }
@@ -198,7 +198,7 @@ bool PluginDeployer::removeMod(int mod_id)
   return false;
 }
 
-bool PluginDeployer::hasMod(int mod_id) const
+bool PluginDeployer::hasMod(int mod_id)
 {
   return false;
 }
@@ -214,7 +214,7 @@ bool PluginDeployer::swapMod(int old_id, int new_id)
 std::vector<ConflictInfo> PluginDeployer::getFileConflicts(
   int mod_id,
   bool show_disabled,
-  std::optional<ProgressNode*> progress_node) const
+  std::optional<ProgressNode*> progress_node)
 {
   if(progress_node)
   {

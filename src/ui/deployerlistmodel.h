@@ -6,14 +6,13 @@
 #pragma once
 
 #include "../core/deployerinfo.h"
-#include <QAbstractTableModel>
+#include <QAbstractItemModel>
 #include <QColor>
-
 
 /*!
  * \brief Manages and provides access to the data displayed in the deployer list.
  */
-class DeployerListModel : public QAbstractTableModel
+class DeployerListModel : public QAbstractItemModel
 {
   Q_OBJECT
 
@@ -100,11 +99,22 @@ public:
    */
   bool usesUnsafeSorting() const;
 
+  QModelIndex index(int row, int column, const QModelIndex &parent) const override;
+  QModelIndex parent(const QModelIndex &index) const override;
+  bool hasChildren(const QModelIndex &parent) const override;
+  bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+  void addSeparator();
+  Qt::ItemFlags flags(const QModelIndex &index) const override;
+
 private:
   /*! \brief Contains all mods managed by this model. */
   DeployerInfo deployer_info_;
   /*! \brief Maps mod ids to the color used to display their names. */
   std::map<int, QBrush> text_colors_;
   /*! \brief For every mod: A vector containing every tag added to that mod. */
-  std::vector<std::vector<std::string>> tags_;
+  // std::vector<std::vector<std::string>> tags_;
+  TreeItem<DeployerEntry> *getItem(const QModelIndex &index) const;
 };
+
+Q_DECLARE_METATYPE(DeployerEntry *);
+

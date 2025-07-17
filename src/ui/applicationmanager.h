@@ -587,6 +587,7 @@ public slots:
    * \param to_index Destination index.
    */
   void changeLoadorder(int app_id, int deployer, int from_idx, int to_idx);
+  void commitChanges(int app_id, int deployer);
   /*!
    * \brief Updates which \ref Deployer "deployer" should manage given mods.
    * \param app_id The target \ref ModdedApplication "application".
@@ -602,7 +603,7 @@ public slots:
    * \param deployer The target Deployer
    * \param mod_id Id of the mod to be removed.
    */
-  void removeModFromDeployer(int app_id, int deployer, int mod_id);
+  void removeNodeFromDeployer(int app_id, int deployer, void *node_ptr);
   /*!
    * \brief Enables or disables the given mod in the load order for given Deployer
    * for given \ref ModdedApplication "application".
