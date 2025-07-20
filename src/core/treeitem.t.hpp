@@ -108,19 +108,8 @@ Json::Value TreeItem<T>::toJson() const {
 }
 
 template <typename T>
-void TreeItem<T>::rotate(int from, int to) {
-  if(to < from)
-  {
-    std::rotate(m_childItems.begin() + to,
-                m_childItems.begin() + from,
-                m_childItems.begin() + from + 1);
-  }
-  else
-  {
-    std::rotate(m_childItems.begin() + from,
-                m_childItems.begin() + from + 1,
-                m_childItems.begin() + to + 1);
-  }
+void TreeItem<T>::swapChild(int from, int to) {
+  iter_swap(m_childItems.begin() + from, m_childItems.begin() + to);
   dirty = true;
 }
 

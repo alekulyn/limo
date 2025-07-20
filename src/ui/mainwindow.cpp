@@ -206,8 +206,8 @@ void MainWindow::setupConnections()
           app_manager_, &ApplicationManager::uninstallMods);
   connect(this, &MainWindow::setModStatus,
           app_manager_, &ApplicationManager::setModStatus);
-  connect(this, &MainWindow::changeLoadorder,
-          app_manager_, &ApplicationManager::changeLoadorder);
+  // connect(this, &MainWindow::changeLoadorder,
+  //         app_manager_, &ApplicationManager::changeLoadorder);
   connect(this, &MainWindow::commitChanges,
           app_manager_, &ApplicationManager::commitChanges);
   connect(this, &MainWindow::deployMods,

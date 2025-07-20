@@ -472,11 +472,11 @@ void ApplicationManager::uninstallMods(int app_id,
   emit completedOperations(std::format("Mod{} removed", mod_ids.size() == 1 ? "" : "s").c_str());
 }
 
-void ApplicationManager::changeLoadorder(int app_id, int deployer, int from_idx, int to_idx)
-{
-  if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
-    handleExceptions<&ModdedApplication::changeLoadorder>(app_id, deployer, from_idx, to_idx);
-}
+// void ApplicationManager::changeLoadorder(int app_id, int deployer, int from_idx, int to_idx)
+// {
+//   if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
+//     handleExceptions<&ModdedApplication::changeLoadorder>(app_id, deployer, from_idx, to_idx);
+// }
 
 void ApplicationManager::commitChanges(int app_id, int deployer)
 {

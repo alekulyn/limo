@@ -98,16 +98,12 @@ void ReverseDeployer::unDeploy(std::optional<ProgressNode*> progress_node)
   deployed_loadorder_.clear();
 }
 
-void ReverseDeployer::changeLoadorder(int from_index, int to_index)
+void ReverseDeployer::swapChild(int from_index, int to_index)
 {
   log_(
     Log::LOG_DEBUG,
-    "WARNING: You are trying to change the load order of a reverse deployer." "This will have " "no"
-                                                                                                " e"
-                                                                                                "ff"
-                                                                                                "ec"
-                                                                                                "t"
-                                                                                                ".");
+    "WARNING: You are trying to change the load order of a reverse deployer."
+    "This will have no effect.");
 }
 
 void ReverseDeployer::setModStatus(int mod_id, bool status)

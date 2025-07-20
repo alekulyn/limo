@@ -128,13 +128,11 @@ std::string Deployer::getType() const
   return type_;
 }
 
-void Deployer::changeLoadorder(int from_index, int to_index)
+void Deployer::swapChild(int from_index, int to_index)
 {
-  if(to_index == from_index)
+  if(to_index == from_index || to_index < 0 || to_index >= loadorders_[current_profile_].size())
     return;
-  if(to_index < 0 || to_index >= loadorders_[current_profile_].size())
-    return;
-  loadorders_[current_profile_].rotate(from_index, to_index);
+  loadorders_[current_profile_].swapChild(from_index, to_index);
 }
 
 bool Deployer::addMod(int mod_id, bool enabled, bool update_conflicts)
@@ -200,10 +198,12 @@ std::vector<ConflictInfo> Deployer::getFileConflicts(
     return conflicts;
   std::vector<std::string> mod_files = getModFiles(mod_id, false);
   std::vector<int> loadorder;
-  for(const auto& entry : loadorders_[current_profile_])
+  for(const auto& entry : loadorders_[current_profile_].getTraversalItems())
   {
-    if(static_cast<DeployerModInfo *>(entry)->enabled || show_disabled)
-      loadorder.push_back(entry->id);
+    if (!entry->isSeparator) {
+      if(static_cast<DeployerModInfo *>(entry)->enabled || show_disabled)
+        loadorder.push_back(entry->id);
+    }
   }
 
   if(progress_node)

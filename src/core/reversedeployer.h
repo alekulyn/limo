@@ -65,7 +65,7 @@ public:
    * \param from_index Index of mod to be moved.
    * \param to_index Destination index.
    */
-  void changeLoadorder(int from_index, int to_index) override;
+  void swapChild(int from_index, int to_index) override;
   /*!
    * \brief Enables or disables the given mod in the load order. Saves changes to disk.
    * \param mod_id Mod to be edited.

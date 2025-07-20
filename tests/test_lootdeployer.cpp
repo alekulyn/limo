@@ -35,10 +35,10 @@ TEST_CASE("Load order can be edited", "[loot]")
   resetFiles();
   LootDeployer depl(
     DATA_DIR / "target" / "loot" / "source", DATA_DIR / "target" / "loot" / "target", "", false);
-  depl.changeLoadorder(0, 2);
+  depl.swapChild(0, 2);
   depl.setModStatus(1, true);
   depl.setModStatus(0, false);
-  depl.changeLoadorder(2, 1);
+  depl.swapChild(2, 1);
   REQUIRE_THAT(depl.getModNames(),
                Catch::Matchers::Equals(std::vector<std::string>{ "c.esp", "a.esp", "Morrowind.esm", "d.esp" }));
   REQUIRE_THAT(depl.getLoadorder(),

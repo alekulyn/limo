@@ -45,28 +45,14 @@ std::map<int, unsigned long> PluginDeployer::deploy(const std::vector<int>& load
   return {};
 }
 
-void PluginDeployer::changeLoadorder(int from_index, int to_index)
+void PluginDeployer::swapChild(int from_index, int to_index)
 {
-  if(to_index == from_index)
+  if(to_index == from_index || to_index < 0 || to_index >= plugins_.size())
     return;
-  if(to_index < 0 || to_index >= plugins_.size())
-    return;
-  if(to_index < from_index)
-    std::rotate(plugins_.begin() + to_index,
-                plugins_.begin() + from_index,
-                plugins_.begin() + from_index + 1);
-  else
-    std::rotate(plugins_.begin() + from_index,
-                plugins_.begin() + from_index + 1,
-                plugins_.begin() + to_index + 1);
+  iter_swap(plugins_.begin() + to_index, plugins_.begin() + from_index);
   if(tags_.size() == plugins_.size())
   {
-    if(to_index < from_index)
-      std::rotate(
-        tags_.begin() + to_index, tags_.begin() + from_index, tags_.begin() + from_index + 1);
-    else
-      std::rotate(
-        tags_.begin() + from_index, tags_.begin() + from_index + 1, tags_.begin() + to_index + 1);
+    iter_swap(tags_.begin() + to_index, tags_.begin() + from_index);
   }
   writePluginTags();
   writePlugins();

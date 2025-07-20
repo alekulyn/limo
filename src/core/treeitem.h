@@ -63,7 +63,7 @@ public:
       if (m_childItems.empty()) return nullptr;
       return m_childItems.back();
     }
-    void rotate(int from, int to);
+    void swapChild(int from, int to);
 
 private:
     std::vector<TreeItem<T> *> m_childItems;

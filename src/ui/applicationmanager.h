@@ -586,7 +586,7 @@ public slots:
    * \param from_index Index of mod to be moved.
    * \param to_index Destination index.
    */
-  void changeLoadorder(int app_id, int deployer, int from_idx, int to_idx);
+  // void changeLoadorder(int app_id, int deployer, int from_idx, int to_idx);
   void commitChanges(int app_id, int deployer);
   /*!
    * \brief Updates which \ref Deployer "deployer" should manage given mods.
