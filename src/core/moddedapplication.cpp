@@ -711,7 +711,7 @@ void ModdedApplication::removeModFromGroup(int mod_id,
         if(iter != loadorder.end())
         {
           deployers_[depl]->addMod(active_group_members_[group], static_cast<DeployerModInfo *>(*iter)->enabled, false);
-          // deployers_[depl]->changeLoadorder(loadorder.size(), iter - loadorder.begin());
+          deployers_[depl]->swapChild(loadorder.size(), iter - loadorder.begin());
           update_targets[depl].push_back(prof);
           weights.push_back(loadorder.size());
         }
