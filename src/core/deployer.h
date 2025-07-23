@@ -98,13 +98,13 @@ public:
    * \brief Setter for the load order used for deployment.
    * \param loadorder The new load order.
    */
-  void setLoadorder(const TreeItem<DeployerEntry>& loadorder);
+  void setLoadorder(const std::shared_ptr<TreeItem<DeployerEntry>> loadorder);
   void setLoadorder(Json::Value loadorder);
   /*!
    * \brief Getter for the current mod load order.
    * \return The load order.
    */
-  virtual TreeItem<DeployerEntry> *getLoadorder();
+  virtual std::shared_ptr<TreeItem<DeployerEntry>> getLoadorder();
   /*!
    * \brief Returns the type of this deployer, i.e. SIMPLEDEPLOYER
    * \return The type.
@@ -414,7 +414,7 @@ protected:
   /*! \brief The currently active profile. */
   int current_profile_ = 0;
   /*! \brief One load order per profile consisting of tuples of mod ids and their enabled status. */
-  std::vector<TreeItem<DeployerEntry>> loadorders_;
+  std::vector<std::shared_ptr<TreeItem<DeployerEntry>>> loadorders_;
   /*!
    * \brief For every profile: Groups of mods which conflict with each other. The last
    * group contains mods with no conflicts.
@@ -496,5 +496,5 @@ protected:
    * \param directory Directory from which to remove the file.
    */
   void removeManagedDirFile(const std::filesystem::path& directory) const;
-  void setLoadorder(Json::Value entry, TreeItem<DeployerEntry>& current);
+  void setLoadorder(Json::Value entry, std::shared_ptr<TreeItem<DeployerEntry>> current);
 };

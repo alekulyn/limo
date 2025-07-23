@@ -8,74 +8,75 @@
 #include <vector>
 
 template <typename T>
-class TreeItem
+class TreeItem : public std::enable_shared_from_this<TreeItem<T>>
 {
 public:
-    explicit TreeItem(T *data, TreeItem *parent = nullptr);
+  // ~TreeItem() = default;
+  // TreeItem(const TreeItem&) = delete;
+  // TreeItem& operator=(const TreeItem&) = delete;
+  // TreeItem(TreeItem&&) noexcept = default;
+  // TreeItem& operator=(TreeItem&&) noexcept = default;
 
-    TreeItem *child(int number);
-    int childCount() const;
-    TreeItem *parent();
-    void setParent(TreeItem<T> *parent);
-    int row() const;
-    bool setData(T *value);
-    T *getData() const { return itemData; }
-    std::vector<TreeItem<T> *> getTraversal() {
-      if (dirty) refresh();
-      return traversal;
-    }
-    std::vector<T *> getTraversalItems() {
-      if (dirty) refresh();
-      return traversalItems;
-    }
-    void refresh() {
-      traversal.clear();
-      traversalItems.clear();
-      preOrderTraversal();
-      for (auto &item : traversal) {
-        traversalItems.push_back(item->getData());
-      }
-      dirty = false;
-    }
-    
-    void emplace_back(TreeItem *data);
-    void emplace_back(T *data);
-    void insert(int position, TreeItem<T> *item);
-    void remove(TreeItem<T> *item);
-    void markNull(TreeItem<T> *item);
-    std::vector<T *>::iterator begin() {
-      return traversalItems.begin();
-    }
-    std::vector<T *>::iterator end() {
-      if (dirty) refresh();
-      return traversalItems.end();
-    }
-    int size() const {
-      return m_childItems.size();
-    }
-    bool empty() const { return m_childItems.empty(); }
-    void erase(T *item);
-    TreeItem *operator[](int i) {
-      return m_childItems[i];
-    }
-    Json::Value toJson() const;
-    TreeItem<T> *back() {
-      if (m_childItems.empty()) return nullptr;
-      return m_childItems.back();
-    }
-    void swapChild(int from, int to);
+  TreeItem(std::shared_ptr<T> data, std::shared_ptr<TreeItem<T>> parent = nullptr);
+
+  int childCount() const;
+  std::shared_ptr<TreeItem<T>> parent();
+  void setParent(std::shared_ptr<TreeItem<T>> parent);
+  int row() const;
+  bool setData(std::unique_ptr<T> value);
+  std::shared_ptr<T> getData() const { return itemData; }
+  std::vector<std::weak_ptr<TreeItem<T>>> getTraversal() {
+    if (dirty) refresh();
+    return traversal_cache;
+  }
+  std::vector<std::weak_ptr<T>> getTraversalItems() {
+    if (dirty) refresh();
+    return traversalItems_cache;
+  }
+
+  void emplace_back(std::shared_ptr<TreeItem<T>> data);
+  void emplace_back(std::shared_ptr<T> data);
+  void insert(int position, std::shared_ptr<TreeItem> item);
+  void remove(std::weak_ptr<TreeItem<T>> item);
+  void erase(std::weak_ptr<T> item);
+  std::shared_ptr<TreeItem<T>> markNull(TreeItem<T> *item);
+
+  int size() const {
+    return m_childItems.size();
+  }
+  bool empty() const { return m_childItems.empty(); }
+  std::shared_ptr<TreeItem<T>> operator[](int i) {
+    return m_childItems[i];
+  }
+  std::shared_ptr<TreeItem<T>> child(int number);
+  std::vector<std::weak_ptr<T>>::iterator begin() {
+    return traversalItems_cache.begin();
+  }
+  std::vector<std::weak_ptr<T>>::iterator end() {
+    if (dirty) refresh();
+    return traversalItems_cache.end();
+  }
+  std::shared_ptr<TreeItem<T>> back() {
+    static std::shared_ptr<TreeItem<T>> emptyPtr;
+    if (m_childItems.empty()) return emptyPtr;
+    return m_childItems.back();
+  }
+
+  void swapChild(int from, int to);
+  void refresh();
+  Json::Value toJson() const;
 
 private:
-    std::vector<TreeItem<T> *> m_childItems;
-    T *itemData;
-    TreeItem<T> *m_parentItem;
+  std::vector<std::shared_ptr<TreeItem<T>>> m_childItems;
+  std::shared_ptr<T> itemData;
+  std::shared_ptr<TreeItem<T>> m_parentItem;
 
-    bool dirty = true;
-    std::vector<TreeItem<T> *> traversal;
-    std::vector<T *> traversalItems;
-    int rows = -1;
+  bool dirty = true;
+  std::vector<std::weak_ptr<TreeItem<T>>> traversal_cache;
+  std::vector<std::weak_ptr<T>> traversalItems_cache;
+  int rows = -1;
 
-    std::vector<TreeItem<T> *> preOrderTraversal();
+  std::vector<std::weak_ptr<TreeItem<T>>> preOrderTraversal();
 };
 
 #include "treeitem.t.hpp"

@@ -191,12 +191,14 @@ int ReverseDeployer::getNumMods()
   return current_loadorder_.size();
 }
 
-TreeItem<DeployerEntry> *ReverseDeployer::getLoadorder()
+std::shared_ptr<TreeItem<DeployerEntry>> ReverseDeployer::getLoadorder()
 {
-  TreeItem<DeployerEntry> *loadorder = new TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  std::shared_ptr<TreeItem<DeployerEntry>> loadorder = std::make_shared<TreeItem<DeployerEntry>>(
+    std::make_shared<DeployerEntry>(true, "Root"),
+    nullptr);
   // loadorder.reserve(current_loadorder_.size());
   for(const auto& [i, enabled] : str::enumerate_view(current_loadorder_ | std::views::values))
-    loadorder->emplace_back(new DeployerModInfo(i, "", "", enabled));
+    loadorder->emplace_back(std::make_shared<DeployerModInfo>(i, "", "", enabled));
   return loadorder;
 }
 

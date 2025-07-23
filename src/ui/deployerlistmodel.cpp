@@ -12,6 +12,18 @@ namespace str = std::ranges;
 DeployerListModel::DeployerListModel(QObject* parent) : QAbstractItemModel(parent) {
 }
 
+template <typename T>
+std::shared_ptr<T> qModelIndexToShared(const QModelIndex &index)
+{
+    auto rawPtr = index.internalPointer();
+    if (!rawPtr) {
+        return nullptr;
+    }
+    
+    T *typedPtr = static_cast<T*>(rawPtr);
+    return std::shared_ptr<T>(typedPtr, [](T*){});
+}
+
 QVariant DeployerListModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
   if(role == Qt::TextAlignmentRole && section == 2)
@@ -42,8 +54,8 @@ int DeployerListModel::rowCount(const QModelIndex& parent) const
   if (!parent.isValid() && deployer_info_.root == nullptr)
     return 0;
 
-  const TreeItem<DeployerEntry> *parentItem = parent.isValid()
-    ? static_cast<const TreeItem<DeployerEntry> *>(parent.internalPointer())
+  const auto parentItem = parent.isValid()
+    ? qModelIndexToShared<TreeItem<DeployerEntry>>(parent)
     : deployer_info_.root;
 
   return parentItem->childCount();
@@ -61,22 +73,23 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
   const int row = index.row();
   const int col = index.column();
   auto entry = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
+  auto modinfo = static_cast<TreeItem<DeployerModInfo> *>(index.internalPointer())->getData();
   auto data = entry->getData();
   if (role == Qt::CheckStateRole && index.column() == 1)
-    return static_cast<int>( static_cast<DeployerModInfo *>(data)->enabled ? Qt::Checked : Qt::Unchecked );
+    return static_cast<int>( modinfo->enabled ? Qt::Checked : Qt::Unchecked );
   if(role == Qt::BackgroundRole)
   {
     if(col == status_col && !data->isSeparator)
-      return QBrush(static_cast<DeployerModInfo *>(data)->enabled  ? colors::GREEN : colors::GRAY);
+      return QBrush(modinfo->enabled  ? colors::GREEN : colors::GRAY);
     return QBrush(colors::WHITE);
   }
   if(role == Qt::ForegroundRole)
   {
     if(col == status_col)
       return QBrush(QColor(255, 255, 255));
-    if(!text_colors_.contains(static_cast<DeployerModInfo *>(data)->id))
+    if(!text_colors_.contains(modinfo->id))
       return QApplication::palette().text();
-    return text_colors_.at(static_cast<DeployerModInfo *>(data)->id);
+    return text_colors_.at(modinfo->id);
   }
   if(role == Qt::TextAlignmentRole && col == status_col)
     return Qt::AlignCenter;
@@ -85,7 +98,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     if(col == status_col)
     {
       if (!data->isSeparator)
-        return QString(static_cast<DeployerModInfo *>(data)->enabled ? "Enabled" : "Disabled");
+        return QString(modinfo->enabled ? "Enabled" : "Disabled");
       return QString("");
     }
     if(col == name_col)
@@ -95,23 +108,25 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     if(col == id_col)
     {
       if (!data->isSeparator) {
-        const int id = static_cast<DeployerModInfo *>(data)->id;
+        const int id = modinfo->id;
         if(!deployer_info_.ids_are_source_references)
           return id;
         if(id == -1)
-          return static_cast<DeployerModInfo *>(data)->sourceName.c_str();
+          return modinfo->sourceName.c_str();
         return std::format("{} [{}]", deployer_info_.source_mod_names_[row], id).c_str();
       }
       return QString("");
     }
     if(col == tags_col)
     {
+      if (modinfo->isSeparator)
+        return QVariant();
       // if(tags_.empty())
       //   return "";
       QStringList tags;
-      for(const auto& tag : static_cast<DeployerModInfo *>(data)->auto_tags)
+      for(const auto& tag : modinfo->auto_tags)
         tags.append(tag.c_str());
-      for(const auto& tag : static_cast<DeployerModInfo *>(data)->manual_tags)
+      for(const auto& tag : modinfo->manual_tags)
         tags.append(tag.c_str());
       tags.sort(Qt::CaseInsensitive);
       return tags.join(", ");
@@ -120,7 +135,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
   if(role == mod_status_role)
   {
     if (!data->isSeparator) {
-      return static_cast<DeployerModInfo *>(data)->enabled;
+      return modinfo->enabled;
     } else {
       return false;
     }
@@ -128,19 +143,21 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
   if(role == ModListModel::mod_id_role)
   {
     if(!deployer_info_.ids_are_source_references && !data->isSeparator)
-      return static_cast<DeployerModInfo *>(data)->id;
+      return modinfo->id;
     return row;
   }
   if(role == ModListModel::mod_name_role || role == Qt::EditRole)
     return data->name.c_str();
   if(role == mod_tags_role)
   {
+    if (modinfo->isSeparator)
+      return QVariant();
     QStringList tags;
     // for(const auto& tag : tags_.at(row))
     //   tags.append(tag.c_str());
-    for(const auto& tag : static_cast<DeployerModInfo *>(data)->auto_tags)
+    for(const auto& tag : modinfo->auto_tags)
       tags.append(tag.c_str());
-    for(const auto& tag : static_cast<DeployerModInfo *>(data)->manual_tags)
+    for(const auto& tag : modinfo->manual_tags)
       tags.append(tag.c_str());
     return tags;
   }
@@ -149,7 +166,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
   if(role == source_mod_name_role)
   {
     if(deployer_info_.ids_are_source_references && !data->isSeparator)
-      return static_cast<DeployerModInfo *>(data)->sourceName.c_str();
+      return modinfo->sourceName.c_str();
     else
       return data->name.c_str();
   }
@@ -214,11 +231,11 @@ QModelIndex DeployerListModel::index(int row, int column, const QModelIndex &par
   if (!hasIndex(row, column, parent))
     return {};
 
-  TreeItem<DeployerEntry> *parentItem = parent.isValid()
-    ? static_cast<TreeItem<DeployerEntry> *>(parent.internalPointer())
+  auto parentItem = parent.isValid()
+    ? qModelIndexToShared<TreeItem<DeployerEntry>>(parent)
     : deployer_info_.root;
 
-  if (auto *childItem = parentItem->child(row))
+  if (auto childItem = parentItem->child(row).get())
     return createIndex(row, column, childItem);
   return {};
 }
@@ -228,11 +245,11 @@ QModelIndex DeployerListModel::parent(const QModelIndex &index) const
   if (!index.isValid())
     return {};
 
-  auto *childItem = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
-  TreeItem<DeployerEntry> *parentItem = childItem->parent();
+  auto childItem = qModelIndexToShared<TreeItem<DeployerEntry>>(index);
+  auto parentItem = childItem->parent();
 
-  return parentItem != deployer_info_.root && parentItem != nullptr
-  ? createIndex(parentItem->row(), 0, parentItem) : QModelIndex{};
+  return (parentItem != deployer_info_.root) && (parentItem != nullptr)
+  ? createIndex(parentItem->row(), 0, parentItem.get()) : QModelIndex{};
 }
 
 bool DeployerListModel::hasChildren(const QModelIndex &parent = QModelIndex()) const
@@ -268,20 +285,12 @@ bool DeployerListModel::setData(const QModelIndex &index, const QVariant &value,
     return value.toString() == item->name.c_str();
 }
 
-TreeItem<DeployerEntry> *DeployerListModel::getItem(const QModelIndex &index) const
-{
-    if (index.isValid()) {
-      return deployer_info_.root->child(index.row());
-    }
-    return deployer_info_.root;
-}
-
 void DeployerListModel::addSeparator()
 {
   emit layoutAboutToBeChanged();
   if (deployer_info_.supports_expandable) {
     this->deployer_info_.root->emplace_back(
-      new DeployerEntry (true, "Separator")
+      std::make_shared<DeployerEntry>(true, "Separator")
     );
   }
   emit layoutChanged();

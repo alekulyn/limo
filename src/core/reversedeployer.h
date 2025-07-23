@@ -112,7 +112,7 @@ public:
    * \brief Getter for the current plugin load order.
    * \return The load order.
    */
-  TreeItem<DeployerEntry> *getLoadorder() override;
+  std::shared_ptr<TreeItem<DeployerEntry>> getLoadorder() override;
   /*!
    * \brief Does nothing since this deployer manages its own mods.
    * \param mod_id Ignored.

@@ -28,7 +28,7 @@ struct DeployerInfo
   std::map<std::string, int> mods_per_tag;
 
   /*! \brief Root of mod tree */
-  TreeItem<DeployerEntry> *root = nullptr;
+  std::shared_ptr<TreeItem<DeployerEntry>> root = nullptr;
 
   /*!
    * \brief Used by ReverseDeployers: If true: Store files on a per profile basis.

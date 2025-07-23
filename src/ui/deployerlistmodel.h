@@ -113,7 +113,6 @@ private:
   std::map<int, QBrush> text_colors_;
   /*! \brief For every mod: A vector containing every tag added to that mod. */
   // std::vector<std::vector<std::string>> tags_;
-  TreeItem<DeployerEntry> *getItem(const QModelIndex &index) const;
 };
 
 Q_DECLARE_METATYPE(DeployerEntry *);

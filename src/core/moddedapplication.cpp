@@ -414,7 +414,7 @@ std::vector<ModInfo> ModdedApplication::getModInfo() const
   return mod_info;
 }
 
-TreeItem<DeployerEntry> *ModdedApplication::getLoadorder(int deployer) const
+std::shared_ptr<TreeItem<DeployerEntry>> ModdedApplication::getLoadorder(int deployer) const
 {
   return deployers_[deployer]->getLoadorder();
 }
@@ -707,10 +707,10 @@ void ModdedApplication::removeModFromGroup(int mod_id,
         deployers_[depl]->setProfile(prof);
         auto loadorder = deployers_[depl]->getLoadorder()->getTraversalItems();
         auto iter = str::find_if(
-          loadorder, [mod_id](const auto& entry) { return entry->id == mod_id; });
+          loadorder, [mod_id](const auto& entry) { return entry.lock()->id == mod_id; });
         if(iter != loadorder.end())
         {
-          deployers_[depl]->addMod(active_group_members_[group], static_cast<DeployerModInfo *>(*iter)->enabled, false);
+          deployers_[depl]->addMod(active_group_members_[group], static_cast<DeployerModInfo *>(iter->lock().get())->enabled, false);
           deployers_[depl]->swapChild(loadorder.size(), iter - loadorder.begin());
           update_targets[depl].push_back(prof);
           weights.push_back(loadorder.size());
@@ -882,7 +882,7 @@ int ModdedApplication::verifyStagingDir(sfs::path staging_dir)
 
 DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
 {
-  auto *root = new TreeItem<DeployerEntry>(new DeployerEntry(true, "Root"), nullptr);
+  auto root = std::make_shared<TreeItem<DeployerEntry>>(std::make_shared<DeployerEntry>(true, "Root"));
   if(!(deployers_[deployer]->isAutonomous()))
   {
     std::map<std::string, int> mods_per_tag;
@@ -892,29 +892,29 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
     auto loadorder = deployers_[deployer]->getLoadorder();
     std::vector<std::string> mod_names;
     mod_names.reserve(loadorder->size());
-    for(auto& entry : loadorder->getTraversalItems())
+    for(auto& entry_weak : loadorder->getTraversalItems())
     {
+      auto entry = static_pointer_cast<DeployerModInfo>(entry_weak.lock());
       if (entry->isSeparator) continue;
-      auto mod_info = static_cast<DeployerModInfo *>(entry);
-      auto mod_name = std::ranges::find_if(installed_mods_, [&mod_info](auto& mod) { return mod.id == mod_info->id; })->name;
+      auto mod_name = std::ranges::find_if(installed_mods_, [&entry](auto& mod) { return mod.id == entry->id; })->name;
       entry->name = mod_name;
       mod_names.push_back(mod_name);
-      if(manual_tag_map_.contains(mod_info->id))
+      if(manual_tag_map_.contains(entry->id))
       {
-        auto map = manual_tag_map_.at(mod_info->id);
-        mod_info->manual_tags.insert(mod_info->manual_tags.end(),
+        auto map = manual_tag_map_.at(entry->id);
+        entry->manual_tags.insert(entry->manual_tags.end(),
                       map.begin(), map.end());
       }
       else
-        mod_info->manual_tags.push_back({});
+        entry->manual_tags.push_back({});
 
-      if(auto_tag_map_.contains(mod_info->id)) {
-        auto map = auto_tag_map_.at(mod_info->id);
-        mod_info->auto_tags.insert(mod_info->auto_tags.end(),
+      if(auto_tag_map_.contains(entry->id)) {
+        auto map = auto_tag_map_.at(entry->id);
+        entry->auto_tags.insert(entry->auto_tags.end(),
                             map.begin(), map.end());
       }
       else
-        mod_info->auto_tags.push_back({});
+        entry->auto_tags.push_back({});
     }
     for(const auto& tag : auto_tags_)
     {
@@ -954,13 +954,13 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
       for(int i = 0; i < loadorder.size(); i++)
       {
         int id = loadorder[i]->getData()->id;
-        auto mod_info = static_cast<DeployerModInfo *>(loadorder[i]->getData());
+        auto mod_info = static_pointer_cast<DeployerModInfo>(loadorder[i]->getData());
         std::string mod_name;
         if(id == -1)
         {
           mod_name = "Vanilla";
           mod_names.push_back(mod_name);
-          auto item = new DeployerModInfo(false, names[i], mod_name, mod_info->id, mod_info->enabled);
+          auto item = make_shared<DeployerModInfo>(false, names[i], mod_name, mod_info->id, mod_info->enabled);
           root->emplace_back(item);
           continue;
         }
@@ -971,7 +971,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
         else
           mod_name = iter->name;
         mod_names.push_back(mod_name);
-        auto item = new DeployerModInfo(false, names[i], mod_name, mod_info->id, mod_info->enabled);
+        auto item = make_shared<DeployerModInfo>(false, names[i], mod_name, mod_info->id, mod_info->enabled);
         root->emplace_back(item);
       }
     }
@@ -987,7 +987,7 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
              deployers_[deployer]->getConflictGroups(),
              true,
              {},
-             root,
+             std::move(root),
              separate_dirs,
              has_ignored_files,
              deployers_[deployer]->supportsSorting(),
@@ -1970,8 +1970,9 @@ void ModdedApplication::updateDeployerGroups(std::optional<ProgressNode*> progre
       deployers_[depl]->setProfile(profile);
       std::vector<bool> completed_groups(active_group_members_.size());
       std::fill(completed_groups.begin(), completed_groups.end(), false);
-      for(const auto& entry : *deployers_[depl]->getLoadorder())
+      for(const auto& entry_weak : *deployers_[depl]->getLoadorder())
       {
+        auto entry = entry_weak.lock();
         if(!group_map_.contains(entry->id))
           continue;
         const int group = group_map_[entry->id];

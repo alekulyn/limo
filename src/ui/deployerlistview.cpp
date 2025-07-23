@@ -90,19 +90,21 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
     if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
       auto target_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
-      auto mouse_down_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_);
-      auto target = static_cast<TreeItem<DeployerEntry> *>(target_idx.internalPointer());
-      auto mouse_down = static_cast<TreeItem<DeployerEntry> *>(mouse_down_idx.internalPointer());
+      auto mouse_down = static_cast<TreeItem<DeployerEntry>*>(
+        static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_).internalPointer()
+      );
+      auto target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
+      // auto mouse_down = static_cast<TreeItem<DeployerEntry> *>(mouse_down_idx.internalPointer());
       if (reorder)
       {
         rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
         // make null and then remove after
-        mouse_down->parent()->markNull(mouse_down);
+        auto mouse_down_owned = mouse_down->parent()->markNull(mouse_down);
         if (mouse_row_region == ROW_REGION.UPPER)
-          target->parent()->insert(target_idx.row(), mouse_down);
+          target->parent()->insert(target_idx.row(), mouse_down_owned);
         else if (mouse_row_region == ROW_REGION.LOWER)
-          target->parent()->insert(target_idx.row()+1, mouse_down);
-        mouse_down->parent()->remove(nullptr);
+          target->parent()->insert(target_idx.row()+1, mouse_down_owned);
+        mouse_down->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
         mouse_down->setParent(target->parent());
         emit modMoved();
       }
@@ -110,8 +112,9 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
       {
         rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
         // target is separator/category
-        target->emplace_back(mouse_down);
-        mouse_down->parent()->remove(mouse_down);
+        auto mouse_down_owned = mouse_down->parent()->markNull(mouse_down);
+        target->emplace_back(mouse_down_owned);
+        mouse_down->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
         mouse_down->setParent(target);
         emit modMoved();
       }
