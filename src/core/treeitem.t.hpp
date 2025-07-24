@@ -51,48 +51,57 @@ int TreeItem<T>::row() const
 template <typename T>
 std::shared_ptr<TreeItem<T>> TreeItem<T>::parent()
 {
-    return m_parentItem;
+  return m_parentItem;
 }
 
 template <typename T>
 bool TreeItem<T>::setData(std::unique_ptr<T> value)
 {
-    itemData = std::move(value);
-    dirty = true;
-    return true;
+  itemData = std::move(value);
+  markDirty();
+  return true;
 }
 
 template <typename T>
 std::vector<std::weak_ptr<TreeItem<T>>> TreeItem<T>::preOrderTraversal()
 {
-    if (!dirty) {
-        return traversal_cache;
-    }
-    std::vector<std::weak_ptr<TreeItem<T>>> result = std::vector<std::weak_ptr<TreeItem<T>>>();
-    if (itemData)
-        result.emplace_back(std::weak_ptr<TreeItem<T>>(this->shared_from_this()));
-    for (const auto &child : m_childItems)
-    {
-        auto child_result = child->preOrderTraversal();
-        result.insert(result.end(), child_result.begin(), child_result.end());
-    }
-    traversal_cache = result;
-    dirty = false;
-    return result;
+  if (!dirty) {
+    return traversal_cache;
+  }
+
+  traversal_cache.clear();
+  traversalItems_cache.clear();
+
+  std::vector<std::weak_ptr<TreeItem<T>>> result = std::vector<std::weak_ptr<TreeItem<T>>>();
+  if (itemData)
+    result.emplace_back(this->weak_from_this());
+  for (const auto &child : m_childItems)
+  {
+    auto child_result = child->preOrderTraversal();
+    result.insert(result.end(), child_result.begin(), child_result.end());
+  }
+
+  traversal_cache = result;
+  for (auto item : traversal_cache)
+    if (auto lockedItem = item.lock())
+      traversalItems_cache.push_back(lockedItem->getData());
+
+  dirty = false;
+  return result;
 }
 
 template <typename T>
 void TreeItem<T>::emplace_back(std::shared_ptr<TreeItem<T>> data)
 {
   m_childItems.emplace_back(std::move(data));
-  dirty = true;
+  markDirty();
 }
 
 template <typename T>
 void TreeItem<T>::emplace_back(std::shared_ptr<T> data)
 {
   m_childItems.emplace_back(make_shared<TreeItem<T>>(std::move(data), this->shared_from_this()));
-  dirty = true;
+  markDirty();
 }
 
 template <typename T>
@@ -110,13 +119,13 @@ Json::Value TreeItem<T>::toJson() const {
 template <typename T>
 void TreeItem<T>::swapChild(int from, int to) {
   iter_swap(m_childItems.begin() + from, m_childItems.begin() + to);
-  dirty = true;
+  markDirty();
 }
 
 template <typename T>
 void TreeItem<T>::insert(int position, std::shared_ptr<TreeItem> item) {
   m_childItems.insert(m_childItems.begin() + position, std::move(item));
-  dirty = true;
+  markDirty();
 }
 
 template <typename T>
@@ -128,6 +137,7 @@ void TreeItem<T>::remove(std::weak_ptr<TreeItem<T>> child) {
     if (it != m_childItems.end()) {
       m_childItems.erase(it);
     }
+    markDirty();
     return;
   }
 
@@ -152,7 +162,7 @@ void TreeItem<T>::remove(std::weak_ptr<TreeItem<T>> child) {
     for (auto& adopted : orphans) {
       adopted->setParent(this->shared_from_this());
     }
-    dirty = true;
+    markDirty();
   }
 }
 
@@ -162,7 +172,7 @@ std::shared_ptr<TreeItem<T>> TreeItem<T>::markNull(TreeItem<T> *item) {
   auto it = std::find_if(m_childItems.begin(), m_childItems.end(),
                          [item](const auto& ptr) { return ptr.get() == item; });
   if (it != m_childItems.end()) {
-    dirty = true;
+    markDirty();
     return std::move(*it);
   } else {
     return nullptr;
@@ -172,12 +182,12 @@ std::shared_ptr<TreeItem<T>> TreeItem<T>::markNull(TreeItem<T> *item) {
 template <typename T>
 void TreeItem<T>::setParent(std::shared_ptr<TreeItem<T>> parent) {
   m_parentItem = parent;
-  dirty = true;
+  markDirty();
 }
 
 template <typename T>
 void TreeItem<T>::erase(std::weak_ptr<T> item) {
-  if (dirty) preOrderTraversal();
+  if (dirty) refresh();
   auto found = std::ranges::find_if(
     traversal_cache.begin(),
     traversal_cache.end(),
@@ -187,13 +197,15 @@ void TreeItem<T>::erase(std::weak_ptr<T> item) {
 
 template <typename T>
 void TreeItem<T>::refresh() {
-  traversal_cache.clear();
-  traversalItems_cache.clear();
   preOrderTraversal();
-  for (auto &item : traversal_cache) {
-    traversalItems_cache.push_back(item.lock()->getData());
+}
+
+template <typename T>
+void TreeItem<T>::markDirty() {
+  dirty = true;
+  if (parent() != nullptr) {
+    parent()->markDirty();
   }
-  dirty = false;
 }
 
 template class TreeItem<DeployerEntry>;

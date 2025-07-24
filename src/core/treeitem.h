@@ -40,6 +40,7 @@ public:
   void remove(std::weak_ptr<TreeItem<T>> item);
   void erase(std::weak_ptr<T> item);
   std::shared_ptr<TreeItem<T>> markNull(TreeItem<T> *item);
+  void markDirty();
 
   int size() const {
     return m_childItems.size();

@@ -75,7 +75,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
   auto entry = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
   auto modinfo = static_cast<TreeItem<DeployerModInfo> *>(index.internalPointer())->getData();
   auto data = entry->getData();
-  if (role == Qt::CheckStateRole && index.column() == 1)
+  if (role == Qt::CheckStateRole && col == name_col)
     return static_cast<int>( modinfo->enabled ? Qt::Checked : Qt::Unchecked );
   if(role == Qt::BackgroundRole)
   {
@@ -121,8 +121,6 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     {
       if (modinfo->isSeparator)
         return QVariant();
-      // if(tags_.empty())
-      //   return "";
       QStringList tags;
       for(const auto& tag : modinfo->auto_tags)
         tags.append(tag.c_str());
@@ -153,8 +151,6 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     if (modinfo->isSeparator)
       return QVariant();
     QStringList tags;
-    // for(const auto& tag : tags_.at(row))
-    //   tags.append(tag.c_str());
     for(const auto& tag : modinfo->auto_tags)
       tags.append(tag.c_str());
     for(const auto& tag : modinfo->manual_tags)

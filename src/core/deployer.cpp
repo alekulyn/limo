@@ -149,7 +149,7 @@ bool Deployer::addMod(int mod_id, bool enabled, bool update_conflicts)
 
 bool Deployer::removeNode(void *node_ptr)
 {
-  auto item = std::make_shared<TreeItem<DeployerEntry>>(*static_cast<TreeItem<DeployerEntry>*>(node_ptr));
+  auto item = static_cast<TreeItem<DeployerEntry>*>(node_ptr)->shared_from_this();
   item->parent()->remove(item);
   if(auto_update_conflict_groups_)
     updateConflictGroups();
@@ -776,7 +776,8 @@ void Deployer::setAutoUpdateConflictGroups(bool status)
 
 std::optional<bool> Deployer::getModStatus(int mod_id)
 {
-  auto iter = str::find_if(*loadorders_[current_profile_],
+  auto iter = str::find_if(loadorders_[current_profile_]->begin(),
+                            loadorders_[current_profile_]->end(),
                            [mod_id](auto entry) { return entry.lock()->id == mod_id; });
   if(iter == loadorders_[current_profile_]->end())
     return {};
