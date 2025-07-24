@@ -278,7 +278,7 @@ bool DeployerListModel::setData(const QModelIndex &index, const QVariant &value,
     if (role != Qt::EditRole)
         return false;
 
-    auto item = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer())->getData();
+    auto item = qModelIndexToShared<TreeItem<DeployerEntry>>(index)->getData();
     item->name = value.toString().toStdString();
     emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
 
