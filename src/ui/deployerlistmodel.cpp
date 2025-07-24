@@ -302,7 +302,8 @@ Qt::ItemFlags DeployerListModel::flags(const QModelIndex &index) const
     return Qt::NoItemFlags;
 
   auto flags = QAbstractItemModel::flags(index);
-  if (static_cast<TreeItem<DeployerEntry> *>(index.internalPointer())->getData()->isSeparator == false)
+  auto item = qModelIndexToShared<TreeItem<DeployerEntry>>(index);
+  if (item->getData()->isSeparator == false)
     flags |= Qt::ItemIsUserCheckable;
   else
     flags |= Qt::ItemIsEditable;

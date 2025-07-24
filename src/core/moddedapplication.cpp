@@ -904,17 +904,19 @@ DeployerInfo ModdedApplication::getDeployerInfo(int deployer)
         auto map = manual_tag_map_.at(entry->id);
         entry->manual_tags.insert(entry->manual_tags.end(),
                       map.begin(), map.end());
+        std::sort(entry->manual_tags.begin(), entry->manual_tags.end());
+        auto last = std::unique(entry->manual_tags.begin(), entry->manual_tags.end());
+        entry->manual_tags.erase(last, entry->manual_tags.end());
       }
-      else
-        entry->manual_tags.push_back({});
 
       if(auto_tag_map_.contains(entry->id)) {
         auto map = auto_tag_map_.at(entry->id);
         entry->auto_tags.insert(entry->auto_tags.end(),
                             map.begin(), map.end());
+        std::sort(entry->auto_tags.begin(), entry->auto_tags.end());
+        auto last = std::unique(entry->auto_tags.begin(), entry->auto_tags.end());
+        entry->auto_tags.erase(last, entry->auto_tags.end());
       }
-      else
-        entry->auto_tags.push_back({});
     }
     for(const auto& tag : auto_tags_)
     {
