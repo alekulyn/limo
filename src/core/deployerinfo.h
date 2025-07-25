@@ -20,10 +20,6 @@ struct DeployerInfo
   std::vector<std::vector<int>> conflict_groups;
   /*! \brief If true: Deployer manages its own mods and does not rely on ModdedApplication. */
   bool is_autonomous = false;
-  /*! \brief For every mod: A vector of manual tags added to that mod. */
-  // std::vector<std::vector<std::string>> manual_tags;
-  /*! \brief For every mod: A vector of auto tags added to that mod. */
-  // std::vector<std::vector<std::string>> auto_tags;
   /*! \brief Maps tag names to the number of mods for that tag. */
   std::map<std::string, int> mods_per_tag;
 

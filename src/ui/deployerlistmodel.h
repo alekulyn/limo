@@ -111,8 +111,6 @@ private:
   DeployerInfo deployer_info_;
   /*! \brief Maps mod ids to the color used to display their names. */
   std::map<int, QBrush> text_colors_;
-  /*! \brief For every mod: A vector containing every tag added to that mod. */
-  // std::vector<std::vector<std::string>> tags_;
 };
 
 Q_DECLARE_METATYPE(DeployerEntry *);

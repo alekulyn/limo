@@ -84,9 +84,7 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   setCursor(Qt::ArrowCursor);
   if(enable_drag_reorder_ && event_row > -1 && was_in_drag_drop_)
   {
-    QModelIndex target = index;;
-    // If separator expanded and mouse is in lower region, make separator's first child
-    // If separator is not expanded and mouse is in lower region, make separator's next sibling
+    QModelIndex target = index;
     if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
       auto target_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
@@ -94,7 +92,22 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
         static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_).internalPointer()
       );
       auto target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
-      // auto mouse_down = static_cast<TreeItem<DeployerEntry> *>(mouse_down_idx.internalPointer());
+
+      /* //Not ready to be tested
+      if (target->getData()->isSeparator && mouse_row_region == ROW_REGION.LOWER)
+      {
+        if (isExpanded(target_idx))
+        {
+          // TODO: If separator expanded and mouse is in lower region, insert as separator's first child
+          target_idx = target_idx.child(0, 0);
+          target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
+        } else {
+          // TODO: If separator is not expanded and mouse is in lower region, make separator's next sibling
+          target_idx = target_idx.siblingAtRow(target_idx.row() + 1);
+          target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
+        }
+      }
+      */
       if (reorder)
       {
         rowsAboutToBeRemoved(index.parent(), index.row(), index.row());

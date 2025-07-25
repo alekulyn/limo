@@ -736,6 +736,8 @@ void Deployer::updateConflictGroups(std::optional<ProgressNode*> progress_node)
   for(const auto& entry_weak : *loadorders_[current_profile_])
   {
     auto entry = entry_weak.lock();
+    if (entry->isSeparator)
+      continue;
     bool is_in_group = false;
     for(int i = 0; i < merged_groups.size(); i++)
     {
