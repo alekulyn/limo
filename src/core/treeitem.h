@@ -39,7 +39,7 @@ public:
   void insert(int position, std::shared_ptr<TreeItem> item);
   void remove(std::weak_ptr<TreeItem<T>> item);
   void erase(std::weak_ptr<T> item);
-  std::shared_ptr<TreeItem<T>> markNull(TreeItem<T> *item);
+  std::shared_ptr<TreeItem<T>> markNull(std::shared_ptr<TreeItem<T>> item);
   void markDirty();
 
   int size() const {

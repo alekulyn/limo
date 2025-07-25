@@ -51,7 +51,7 @@ int TreeItem<T>::row() const
 template <typename T>
 std::shared_ptr<TreeItem<T>> TreeItem<T>::parent()
 {
-  return m_parentItem;
+    return m_parentItem;
 }
 
 template <typename T>
@@ -167,10 +167,10 @@ void TreeItem<T>::remove(std::weak_ptr<TreeItem<T>> child) {
 }
 
 template <typename T>
-std::shared_ptr<TreeItem<T>> TreeItem<T>::markNull(TreeItem<T> *item) {
+std::shared_ptr<TreeItem<T>> TreeItem<T>::markNull(std::shared_ptr<TreeItem<T>> item) {
   if (dirty) refresh();
   auto it = std::find_if(m_childItems.begin(), m_childItems.end(),
-                         [item](const auto& ptr) { return ptr.get() == item; });
+                         [item](const auto& ptr) { return ptr.get() == item.get(); });
   if (it != m_childItems.end()) {
     markDirty();
     return std::move(*it);

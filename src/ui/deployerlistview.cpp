@@ -87,53 +87,48 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
     QModelIndex target = index;
     if(target != mouse_down_ && target.isValid() && mouse_down_.isValid())
     {
-      auto target_idx = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
-      auto mouse_down = static_cast<TreeItem<DeployerEntry>*>(
-        static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_).internalPointer()
-      );
-      auto target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
+      auto target_src = static_cast<DeployerListProxyModel*>(model())->mapToSource(target);
+      auto mouse_down_src = static_cast<DeployerListProxyModel*>(model())->mapToSource(mouse_down_);
 
-      /* //Not ready to be tested
-      if (target->getData()->isSeparator && mouse_row_region == ROW_REGION.LOWER)
-      {
-        if (isExpanded(target_idx))
-        {
-          // TODO: If separator expanded and mouse is in lower region, insert as separator's first child
-          target_idx = target_idx.child(0, 0);
-          target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
-        } else {
-          // TODO: If separator is not expanded and mouse is in lower region, make separator's next sibling
-          target_idx = target_idx.siblingAtRow(target_idx.row() + 1);
-          target = qModelIndexToShared<TreeItem<DeployerEntry>>(target_idx);
-        }
-      }
-      */
+      auto target_entry = qModelIndexToShared<TreeItem<DeployerEntry>>(target_src);
+      auto mouse_down_entry = qModelIndexToShared<TreeItem<DeployerEntry>>(mouse_down_src);
+
       if (reorder)
       {
-        rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
+        int position = -1;
+        auto target_parent = target_entry->parent();
+        if (target_entry->getData()->isSeparator && mouse_row_region == ROW_REGION.LOWER && isExpanded(index))
+        {
+            position = 0;
+            target_parent = target_entry;
+        }
+        else {
+          if (mouse_row_region == ROW_REGION.UPPER)
+            position = target.row();
+          else if (mouse_row_region == ROW_REGION.LOWER)
+            position = target.row()+1;
+        }
+        rowsAboutToBeRemoved(mouse_down_.parent(), mouse_down_.row(), mouse_down_.row());
         // make null and then remove after
-        auto mouse_down_owned = mouse_down->parent()->markNull(mouse_down);
-        if (mouse_row_region == ROW_REGION.UPPER)
-          target->parent()->insert(target_idx.row(), mouse_down_owned);
-        else if (mouse_row_region == ROW_REGION.LOWER)
-          target->parent()->insert(target_idx.row()+1, mouse_down_owned);
-        mouse_down->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
-        mouse_down->setParent(target->parent());
+        auto mouse_down_owned = mouse_down_entry->parent()->markNull(mouse_down_entry);
+        target_parent->insert(position, mouse_down_owned);
+        mouse_down_entry->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
+        mouse_down_entry->setParent(target_parent);
         emit modMoved();
       }
-      else if (mouse_row_region == ROW_REGION.HOTSPOT && target->getData()->isSeparator)
+      else if (mouse_row_region == ROW_REGION.HOTSPOT && target_entry->getData()->isSeparator)
       {
-        rowsAboutToBeRemoved(index.parent(), index.row(), index.row());
+        rowsAboutToBeRemoved(mouse_down_.parent(), mouse_down_.row(), mouse_down_.row());
         // target is separator/category
-        auto mouse_down_owned = mouse_down->parent()->markNull(mouse_down);
-        target->emplace_back(mouse_down_owned);
-        mouse_down->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
-        mouse_down->setParent(target);
+        auto mouse_down_owned = mouse_down_entry->parent()->markNull(mouse_down_entry);
+        target_entry->emplace_back(mouse_down_owned);
+        mouse_down_entry->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
+        mouse_down_entry->setParent(target_entry);
         emit modMoved();
       }
       // selectionModel()->setCurrentIndex(model()->index(target_idx.row(), 1, target_idx.parent()),
       //                                   QItemSelectionModel::SelectCurrent);
-      updateMouseDownRow(target_idx);
+      updateMouseDownRow(target);
     }
     else
     {
@@ -144,17 +139,19 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   }
   if(!sameRow(index, mouse_down_))
     updateMouseHoverRow(QModelIndex());
-  else if(event_col == DeployerListModel::status_col && event_row > -1 &&
-          event_row < model()->rowCount() && enable_buttons_ && !was_in_drag_drop_)
+  else if(event_col == DeployerListModel::status_col &&
+          index.isValid() &&
+          enable_buttons_ && !was_in_drag_drop_)
   {
-    auto mod_status_data = model()->data(index, Qt::DisplayRole).toString();
-    if (mod_status_data == "")
+    auto target_src = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+    auto target_entry = qModelIndexToShared<TreeItem<DeployerEntry>>(target_src);
+    if (target_entry->getData()->isSeparator)
       isExpanded(index) ? collapse(index) : expand(index);
     else
       emit modStatusChanged(model()->data(index, ModListModel::mod_id_role).toInt(),
                             !model()->data(index, DeployerListModel::mod_status_role).toBool());
   }
-   QTreeView::mouseReleaseEvent(event);
+  QTreeView::mouseReleaseEvent(event);
 }
 
 bool DeployerListView::enableDragReorder() const
