@@ -406,7 +406,6 @@ void Deployer::sortModsByConflicts(std::optional<ProgressNode*> progress_node)
 {
   updateConflictGroups(progress_node);
   auto new_loadorder = std::make_shared<TreeItem<DeployerEntry>>(std::make_shared<DeployerEntry>(true, "Root"), nullptr);
-  // new_loadorder.reserve(loadorders_[current_profile_].size());
   int i = 0;
   for(const auto& group : conflict_groups_[current_profile_])
   {

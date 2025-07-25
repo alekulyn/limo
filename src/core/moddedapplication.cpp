@@ -239,12 +239,6 @@ void ModdedApplication::uninstallMods(const std::vector<int>& mod_ids,
   updateSettings(true);
 }
 
-// void ModdedApplication::changeLoadorder(int deployer, int from_index, int to_index)
-// {
-//   deployers_[deployer]->changeLoadorder(from_index, to_index);
-//   updateSettings(true);
-// }
-
 void ModdedApplication::commitChanges()
 {
   updateSettings(true);
@@ -1666,14 +1660,6 @@ void ModdedApplication::updateSettings(bool write)
         json_settings_["deployers"][depl]["profiles"][prof]["name"] = profile_names_[prof];
         auto loadorder = deployers_[depl]->getLoadorder();
         json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = loadorder->toJson();
-        // for(int mod = 0; mod < loadorder.size(); mod++)
-        // {
-          // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"][mod]["id"] =
-          //   std::get<0>(loadorder[mod]);
-          // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"][mod]["enabled"] =
-          //   std::get<1>(loadorder[mod]);
-          // json_settings_["deployers"][depl]["profiles"][prof]["loadorder"] = NULL;
-        // }
         auto conflict_groups = deployers_[depl]->getConflictGroups();
         for(int group = 0; group < conflict_groups.size(); group++)
         {

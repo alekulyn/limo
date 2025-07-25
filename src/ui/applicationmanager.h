@@ -578,15 +578,6 @@ public slots:
    * is used.
    */
   void uninstallMods(int app_id, std::vector<int> mod_ids, std::string installer_type);
-  /*!
-   * \brief Moves a mod from one position in the load order to another for given Deployer
-   * for given \ref ModdedApplication "application".
-   * \param app_id The target \ref ModdedApplication "application".
-   * \param deployer The target Deployer.
-   * \param from_index Index of mod to be moved.
-   * \param to_index Destination index.
-   */
-  // void changeLoadorder(int app_id, int deployer, int from_idx, int to_idx);
   void commitChanges(int app_id, int deployer);
   /*!
    * \brief Updates which \ref Deployer "deployer" should manage given mods.

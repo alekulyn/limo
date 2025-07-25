@@ -178,21 +178,6 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
 void DeployerListModel::setDeployerInfo(const DeployerInfo& info)
 {
   emit layoutAboutToBeChanged();
-  // tags_.clear();
-  // if(info.manual_tags.size() == 0)
-  // {
-  //   for(const auto& tag : info.auto_tags)
-  //     tags_.push_back(tag);
-  // }
-  // else
-  // {
-  //   for(const auto& [man_tags, auto_tags] : str::zip_view(info.manual_tags, info.auto_tags))
-  //   {
-  //     std::vector<std::string> all_tags = man_tags;
-  //     all_tags.insert(all_tags.end(), auto_tags.begin(), auto_tags.end());
-  //     tags_.push_back(all_tags);
-  //   }
-  // }
   deployer_info_ = info;
   for(int group = 0; group < info.conflict_groups.size(); group++)
   {

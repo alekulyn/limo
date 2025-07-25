@@ -156,7 +156,6 @@ int PluginDeployer::getNumMods()
 std::shared_ptr<TreeItem<DeployerEntry>> PluginDeployer::getLoadorder()
 {
   auto loadorder = std::make_shared<TreeItem<DeployerEntry>>(std::make_shared<DeployerEntry>(true, "Root"), nullptr);
-  // loadorder.reserve(plugins_.size());
   for(const auto& [plugin, enabled] : plugins_)
   {
     auto iter = source_mods_.find(plugin);

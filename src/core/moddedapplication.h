@@ -81,13 +81,6 @@ public:
    * used during installation is used.
    */
   void uninstallMods(const std::vector<int>& mod_ids, const std::string& installer_type = "");
-  /*!
-   * \brief Moves a mod from one position in the load order to another for given Deployer.
-   * \param deployer The target Deployer.
-   * \param from_index Index of mod to be moved.
-   * \param to_index Destination index.
-   */
-  void changeLoadorder(int deployer, int from_index, int to_index);
   void commitChanges();
   /*!
    * \brief Appends a new mod to the load order for given Deployer.
