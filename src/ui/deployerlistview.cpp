@@ -13,6 +13,7 @@ DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
 
 void DeployerListView::mousePressEvent(QMouseEvent* event)
 {
+  QTreeView::mousePressEvent(event);
   const auto index = indexAt(event->pos());
   const int event_row = index.row();
   const auto prev_index = selectionModel()->currentIndex();
@@ -144,9 +145,7 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   {
     auto target_src = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
     auto target_entry = qModelIndexToShared<TreeItem<DeployerEntry>>(target_src);
-    if (target_entry->getData()->isSeparator)
-      isExpanded(index) ? collapse(index) : expand(index);
-    else
+    if (!target_entry->getData()->isSeparator)
       emit modStatusChanged(model()->data(index, ModListModel::mod_id_role).toInt(),
                             !model()->data(index, DeployerListModel::mod_status_role).toBool());
   }
