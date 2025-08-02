@@ -1,6 +1,9 @@
-#include "qmodelindexcheck.h"
+#include <QModelIndex>
 
-bool sameRow (const QModelIndex& a, const QModelIndex& b)
+#ifndef QMODELINDEXCHECK_H
+#define QMODELINDEXCHECK_H
+
+inline bool sameRow (const QModelIndex& a, const QModelIndex& b)
 {
   return
     a.row() == b.row() &&
@@ -20,3 +23,6 @@ std::shared_ptr<T> qModelIndexToShared(const QModelIndex &index)
     T *typedPtr = static_cast<T*>(rawPtr);
     return std::shared_ptr<T>(typedPtr, [](T*){});
 }
+
+// #include "qmodelindexutils.tcc"
+#endif // QMODELINDEXCHECK_H

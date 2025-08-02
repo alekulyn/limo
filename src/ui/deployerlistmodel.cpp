@@ -3,25 +3,11 @@
 #include "core/deployerentry.hpp"
 #include "core/treeitem.h"
 #include "modlistmodel.h"
+#include "qmodelindexutils.h"
 #include <QApplication>
 #include <QBrush>
-#include <ranges>
-
-namespace str = std::ranges;
 
 DeployerListModel::DeployerListModel(QObject* parent) : QAbstractItemModel(parent) {
-}
-
-template <typename T>
-std::shared_ptr<T> qModelIndexToShared(const QModelIndex &index)
-{
-    auto rawPtr = index.internalPointer();
-    if (!rawPtr) {
-        return nullptr;
-    }
-    
-    T *typedPtr = static_cast<T*>(rawPtr);
-    return std::shared_ptr<T>(typedPtr, [](T*){});
 }
 
 QVariant DeployerListModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -284,9 +270,9 @@ Qt::ItemFlags DeployerListModel::flags(const QModelIndex &index) const
 
   auto flags = QAbstractItemModel::flags(index);
   auto item = qModelIndexToShared<TreeItem<DeployerEntry>>(index);
-  if (item->getData()->isSeparator == false)
-    flags |= Qt::ItemIsUserCheckable;
-  else
+  if (item->getData()->isSeparator)
     flags |= Qt::ItemIsEditable;
+  else
+    flags |= Qt::ItemIsUserCheckable;
   return flags;
 }

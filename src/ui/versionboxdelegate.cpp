@@ -2,7 +2,7 @@
 #include "backuplistmodel.h"
 #include "modlistmodel.h"
 #include "modlistview.h"
-#include "qmodelindexcheck.h"
+#include "qmodelindexutils.h"
 #include "ui/colors.h"
 #include <QApplication>
 #include <QComboBox>

@@ -1,6 +1,6 @@
 #include "modlistview.h"
 #include "modlistmodel.h"
-#include "qmodelindexcheck.h"
+#include "qmodelindexutils.h"
 #include <QDebug>
 #include <QGuiApplication>
 #include <QMimeData>

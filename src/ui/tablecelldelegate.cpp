@@ -1,6 +1,6 @@
 #include "tablecelldelegate.h"
 #include "modlistmodel.h"
-#include "qmodelindexcheck.h"
+#include "qmodelindexutils.h"
 #include <QApplication>
 #include <QPainter>
 

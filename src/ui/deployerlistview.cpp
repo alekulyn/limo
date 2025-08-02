@@ -3,12 +3,11 @@
 #include "deployerlistproxymodel.h"
 #include "modlistmodel.h"
 #include "hotspot.h"
-#include "qmodelindexcheck.h"
+#include "qmodelindexutils.h"
 #include <QGuiApplication>
 
 DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
 {
-  setEditTriggers(QAbstractItemView::NoEditTriggers);
   setTreePosition(1);
 }
 
