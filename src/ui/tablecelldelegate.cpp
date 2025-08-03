@@ -95,4 +95,10 @@ void TableCellDelegate::paint(QPainter* painter,
     indicator.rect = option.rect;
     QApplication::style()->drawPrimitive(QStyle::PE_FrameFocusRect, &indicator, painter);
   }
+
+  if (view_index.data(Qt::CheckStateRole).isValid()) {
+      // Let the base class handle checkbox painting
+      QStyledItemDelegate::paint(painter, option, view_index);
+      return;
+  }
 }

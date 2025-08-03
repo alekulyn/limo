@@ -23,14 +23,12 @@ public:
    */
   explicit DeployerListModel(QObject* parent = nullptr);
 
-  /*! \brief Index of the mod status column. */
-  static constexpr int status_col = 0;
   /*! \brief Index of the mod name column. */
-  static constexpr int name_col = 1;
+  static constexpr int name_col = 0;
   /*! \brief Index of the mod id column. */
-  static constexpr int id_col = 2;
+  static constexpr int id_col = 1;
   /*! \brief Index of the tags column. */
-  static constexpr int tags_col = 3;
+  static constexpr int tags_col = 2;
 
   /*! \brief Role representing the activation status of a mod. */
   static constexpr int mod_status_role = 300;

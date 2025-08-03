@@ -8,7 +8,7 @@
 
 DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
 {
-  setTreePosition(1);
+  setTreePosition(0);
 }
 
 void DeployerListView::mousePressEvent(QMouseEvent* event)
@@ -139,16 +139,6 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   }
   if(!sameRow(index, mouse_down_))
     updateMouseHoverRow(QModelIndex());
-  else if(event_col == DeployerListModel::status_col &&
-          index.isValid() &&
-          enable_buttons_ && !was_in_drag_drop_)
-  {
-    auto target_src = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
-    auto target_entry = qModelIndexToShared<TreeItem<DeployerEntry>>(target_src);
-    if (!target_entry->getData()->isSeparator)
-      emit modStatusChanged(model()->data(index, ModListModel::mod_id_role).toInt(),
-                            !model()->data(index, DeployerListModel::mod_status_role).toBool());
-  }
   QTreeView::mouseReleaseEvent(event);
 }
 

@@ -18,8 +18,6 @@ QVariant DeployerListModel::headerData(int section, Qt::Orientation orientation,
   {
     if(orientation == Qt::Orientation::Vertical)
       return QString::number(section + 1);
-    if(section == status_col)
-      return QString("Status");
     if(section == name_col)
       return QString("Name");
     if(section == id_col)
@@ -49,7 +47,7 @@ int DeployerListModel::rowCount(const QModelIndex& parent) const
 
 int DeployerListModel::columnCount(const QModelIndex& parent) const
 {
-  return 4;
+  return 3;
 }
 
 QVariant DeployerListModel::data(const QModelIndex& index, int role) const
@@ -58,35 +56,28 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     return QVariant();
   const int row = index.row();
   const int col = index.column();
-  auto entry = static_cast<TreeItem<DeployerEntry> *>(index.internalPointer());
-  auto modinfo = static_cast<TreeItem<DeployerModInfo> *>(index.internalPointer())->getData();
+  auto entry = qModelIndexToShared<TreeItem<DeployerEntry>>(index);
+  auto modinfo = qModelIndexToShared<TreeItem<DeployerModInfo>>(index)->getData();
   auto data = entry->getData();
-  if (role == Qt::CheckStateRole && col == name_col)
-    return static_cast<int>( modinfo->enabled ? Qt::Checked : Qt::Unchecked );
+  if (role == Qt::CheckStateRole)
+  {
+    if (index.column() == name_col && !data->isSeparator)
+      return modinfo->enabled ? Qt::Checked : Qt::Unchecked;
+    else
+      return QVariant();
+  }
   if(role == Qt::BackgroundRole)
   {
-    if(col == status_col && !data->isSeparator)
-      return QBrush(modinfo->enabled  ? colors::GREEN : colors::GRAY);
     return QBrush(colors::WHITE);
   }
   if(role == Qt::ForegroundRole)
   {
-    if(col == status_col)
-      return QBrush(QColor(255, 255, 255));
     if(!text_colors_.contains(modinfo->id))
       return QApplication::palette().text();
     return text_colors_.at(modinfo->id);
   }
-  if(role == Qt::TextAlignmentRole && col == status_col)
-    return Qt::AlignCenter;
   if(role == Qt::DisplayRole)
   {
-    if(col == status_col)
-    {
-      if (!data->isSeparator)
-        return QString(modinfo->enabled ? "Enabled" : "Disabled");
-      return QString("");
-    }
     if(col == name_col)
     {
       return data->name.c_str();
@@ -242,12 +233,18 @@ bool DeployerListModel::hasChildren(const QModelIndex &parent = QModelIndex()) c
 
 bool DeployerListModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (role != Qt::EditRole)
+    if (role != Qt::EditRole && role != Qt::CheckStateRole)
         return false;
 
     auto item = qModelIndexToShared<TreeItem<DeployerEntry>>(index)->getData();
-    item->name = value.toString().toStdString();
-    emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+    if (role == Qt::CheckStateRole) {
+      auto state = static_cast<Qt::CheckState>(value.toInt());
+      auto modinfo = qModelIndexToShared<TreeItem<DeployerModInfo>>(index)->getData();
+      modinfo->enabled = (state == Qt::Checked);
+      return true;
+    } else
+      item->name = value.toString().toStdString();
+    emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole, Qt::CheckStateRole});
 
     return value.toString() == item->name.c_str();
 }
@@ -270,9 +267,9 @@ Qt::ItemFlags DeployerListModel::flags(const QModelIndex &index) const
 
   auto flags = QAbstractItemModel::flags(index);
   auto item = qModelIndexToShared<TreeItem<DeployerEntry>>(index);
-  if (item->getData()->isSeparator)
+  if (item->getData()->isSeparator && (index.column() == name_col))
     flags |= Qt::ItemIsEditable;
-  else
+  else if (index.column() == name_col)
     flags |= Qt::ItemIsUserCheckable;
   return flags;
 }

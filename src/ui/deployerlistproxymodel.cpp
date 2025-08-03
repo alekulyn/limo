@@ -19,8 +19,6 @@ QVariant DeployerListProxyModel::data(const QModelIndex& index, int role) const
   {
     const int row = index.row();
     const int col = index.column();
-    if(col == DeployerListModel::status_col)
-      return QBrush(QColor(255, 255, 255));
     if(row >= row_text_colors_.size())
       return QApplication::palette().text();
     return row_text_colors_[row];
