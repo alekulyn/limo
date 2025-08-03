@@ -46,7 +46,7 @@ TEST_CASE("State is read", "[openmw]")
     auto loadorder = p_depl.getModNames();
     auto iter = str::find(loadorder, name);
     if(iter != loadorder.end())
-      p_depl.changeLoadorder(iter - loadorder.begin(), i);
+      p_depl.swapChild(iter - loadorder.begin(), i);
   }
   REQUIRE_THAT(p_depl.getModNames(),
                Catch::Matchers::Equals(mod_names));
@@ -74,12 +74,12 @@ TEST_CASE("Load order can be edited", "[openmw]")
     auto loadorder = p_depl.getModNames();
     auto iter = str::find(loadorder, name);
     if(iter != loadorder.end())
-      p_depl.changeLoadorder(iter - loadorder.begin(), i);
+      p_depl.swapChild(iter - loadorder.begin(), i);
   }
   
-  a_depl.changeLoadorder(1, 2);
-  p_depl.changeLoadorder(1, 3);
-  p_depl.changeLoadorder(2, 1);
+  a_depl.swapChild(1, 2);
+  p_depl.swapChild(1, 3);
+  p_depl.swapChild(2, 1);
   verifyFilesAreEqual(DATA_DIR / "target" / "openmw" / "target" / "openmw.cfg", DATA_DIR / "target" / "openmw" / "1" / "openmw.cfg");
   
   a_depl.setModStatus(1, false);
@@ -115,7 +115,7 @@ TEST_CASE("Profiles are managed", "[openmw]")
     auto loadorder = p_depl.getModNames();
     auto iter = str::find(loadorder, name);
     if(iter != loadorder.end())
-      p_depl.changeLoadorder(iter - loadorder.begin(), i);
+      p_depl.swapChild(iter - loadorder.begin(), i);
   }
   
   a_depl.addProfile(-1);
@@ -124,9 +124,9 @@ TEST_CASE("Profiles are managed", "[openmw]")
   p_depl.addProfile(0);
   a_depl.setProfile(1);
   p_depl.setProfile(1);
-  a_depl.changeLoadorder(1, 2);
-  p_depl.changeLoadorder(1, 3);
-  p_depl.changeLoadorder(2, 1);
+  a_depl.swapChild(1, 2);
+  p_depl.swapChild(1, 3);
+  p_depl.swapChild(2, 1);
   verifyFilesAreEqual(DATA_DIR / "target" / "openmw" / "target" / "openmw.cfg", DATA_DIR / "target" / "openmw" / "1" / "openmw.cfg");
   
   a_depl.addProfile(1);

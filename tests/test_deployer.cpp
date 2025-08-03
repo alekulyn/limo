@@ -89,8 +89,8 @@ TEST_CASE("Loadorder is being changed", "[deployer]")
   depl.addMod(2, true);
   depl.addMod(0, true);
   depl.addMod(1, true);
-  depl.changeLoadorder(1, 0);
-  depl.changeLoadorder(1, 2);
+  depl.swapChild(1, 0);
+  depl.swapChild(1, 2);
   depl.deploy();
   verifyDirsAreEqual(DATA_DIR / "app", DATA_DIR / "target" / "mod012", true);
 }
@@ -106,7 +106,7 @@ TEST_CASE("Profiles", "[deployer]")
   depl.setProfile(1);
   depl.addMod(0, true);
   depl.addMod(2, true);
-  depl.changeLoadorder(0, 1);
+  depl.swapChild(0, 1);
   depl.deploy();
   SECTION("Copy profile")
   verifyDirsAreEqual(DATA_DIR / "app", DATA_DIR / "target" / "mod012", true);
