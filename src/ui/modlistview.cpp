@@ -13,6 +13,9 @@ namespace str = std::ranges;
 ModListView::ModListView(QWidget* parent) : QTreeView(parent)
 {
   setMouseTracking(true);
+  QFile styleFile(":/styles/tablecellstyle.qss");
+  styleFile.open(QFile::ReadOnly);
+  setStyleSheet(styleFile.readAll());
 }
 
 void ModListView::dropEvent(QDropEvent* event)

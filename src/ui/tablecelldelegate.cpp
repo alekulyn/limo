@@ -21,52 +21,22 @@ void TableCellDelegate::paint(QPainter* painter,
   const auto mouse_row = parent_view_->getHoverRow();
   const bool row_is_selected =
     parent_view_->selectionModel()->rowIntersectsSelection(view_index.row(), view_index.parent());
-  if(row_is_selected)
-  {
-    cell.palette.setBrush(
-      QPalette::Base,
-      option.palette.color(parent_view_->hasFocus() ? QPalette::Active : QPalette::Inactive,
-                           QPalette::Highlight));
-  }
-  else if(sameRow(mouse_row, view_index) &&
+
+  QStyleOptionViewItem opt = option;
+  initStyleOption(&opt, view_index);
+  if(parent_view_->isInDragDrop() &&
+    sameRow(mouse_row, view_index) &&
     parent_view_->getMouseRegion() != parent_view_->ROW_REGION.UPPER &&
     parent_view_->getMouseRegion() != parent_view_->ROW_REGION.LOWER)
   {
-    const float color_ratio = 0.8;
-    auto hl_color = option.palette.color(QPalette::Highlight);
-    auto bg_color = option.palette.color(is_even_row ? QPalette::Base : QPalette::AlternateBase);
-    auto mix_color = hl_color;
-    mix_color.setRed(hl_color.red() * (1 - color_ratio) + bg_color.red() * color_ratio);
-    mix_color.setGreen(hl_color.green() * (1 - color_ratio) + bg_color.green() * color_ratio);
-    mix_color.setBlue(hl_color.blue() * (1 - color_ratio) + bg_color.blue() * color_ratio);
-    cell.palette.setBrush(QPalette::Base, QBrush(mix_color));
+    opt.backgroundBrush = option.palette.brush(
+      parent_view_->hasFocus() ? QPalette::Active : QPalette::Inactive,
+      QPalette::Highlight);
   }
-  else if(!is_even_row)
-    cell.palette.setBrush(QPalette::Base, option.palette.alternateBase());
-  QPixmap map(rect.width(), rect.height());
-  map.fill(cell.palette.color(QPalette::Base));
-  painter->drawPixmap(rect, map);
+  opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
+
   auto icon_var = model_index.data(ModListModel::icon_role);
-  if(icon_var.isNull())
-  {
-    auto fg_brush_var = view_index.data(Qt::ForegroundRole);
-    auto old_pen = painter->pen();
-    if(row_is_selected)
-      painter->setPen(option.palette.color(QPalette::HighlightedText));
-    else if(!fg_brush_var.isNull())
-      painter->setPen(fg_brush_var.value<QBrush>().color());
-    auto icon_rect = rect;
-    icon_rect.setLeft(rect.left() + 3);
-    icon_rect.setBottom(rect.bottom() - 1);
-    QApplication::style()->drawItemText(painter,
-                                        icon_rect,
-                                        Qt::AlignLeft | Qt::AlignVCenter,
-                                        option.palette,
-                                        true,
-                                        model_index.data().toString());
-    painter->setPen(old_pen);
-  }
-  else
+  if(!icon_var.isNull())
   {
     auto icon = icon_var.value<QIcon>();
     const int icon_width = 16;
@@ -94,11 +64,5 @@ void TableCellDelegate::paint(QPainter* painter,
     QStyleOptionFocusRect indicator;
     indicator.rect = option.rect;
     QApplication::style()->drawPrimitive(QStyle::PE_FrameFocusRect, &indicator, painter);
-  }
-
-  if (view_index.data(Qt::CheckStateRole).isValid()) {
-      // Let the base class handle checkbox painting
-      QStyledItemDelegate::paint(painter, option, view_index);
-      return;
   }
 }

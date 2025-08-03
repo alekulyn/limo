@@ -66,10 +66,6 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     else
       return QVariant();
   }
-  if(role == Qt::BackgroundRole)
-  {
-    return QBrush(colors::WHITE);
-  }
   if(role == Qt::ForegroundRole)
   {
     if(!text_colors_.contains(modinfo->id))

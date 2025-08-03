@@ -9,6 +9,9 @@
 DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
 {
   setTreePosition(0);
+  QFile styleFile(":/styles/tablecellstyle.qss");
+  styleFile.open(QFile::ReadOnly | QFile::Text);
+  setStyleSheet(styleFile.readAll());
 }
 
 void DeployerListView::mousePressEvent(QMouseEvent* event)
@@ -18,7 +21,7 @@ void DeployerListView::mousePressEvent(QMouseEvent* event)
   const int event_row = index.row();
   const auto prev_index = selectionModel()->currentIndex();
   selectionModel()->clearSelection();
-  const auto selection = QItemSelection(model()->index(event_row, 1, index.parent()),
+  const auto selection = QItemSelection(model()->index(event_row, 0, index.parent()),
                                         model()->index(event_row, model()->columnCount() - 1, index.parent()));
   selectionModel()->select(selection, QItemSelectionModel::Select);
   selectionModel()->setCurrentIndex(model()->index(event_row, 1, index.parent()),

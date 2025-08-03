@@ -344,6 +344,10 @@ set(PROJECT_SOURCES
         src/ui/qmodelindexutils.h
 )
 
+qt_add_resources(QSS_RESOURCES
+    styles/styles.qrc
+)
+
 # Set install target so app config files can be found
 if(NOT DEFINED LIMO_INSTALL_PREFIX)
   set(LIMO_INSTALL_PREFIX "/usr/local")
@@ -353,7 +357,9 @@ configure_file(src/core/consts.h.in
                ${PROJECT_SOURCE_DIR}/src/core/consts.h)
 
 add_executable(Limo
-    ${PROJECT_SOURCES})
+    ${PROJECT_SOURCES}
+    ${QSS_RESOURCES}
+)
 
 target_include_directories(Limo PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
