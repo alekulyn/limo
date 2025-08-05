@@ -164,3 +164,15 @@ void DeployerListView::dataChanged(const QModelIndex &topLeft, const QModelIndex
   emit modMoved();
   QTreeView::dataChanged(topLeft, bottomRight, roles);
 }
+
+void DeployerListView::mouseDoubleClickEvent(QMouseEvent* event)
+{
+  const auto index = indexAt(event->pos());
+  auto index_proxy = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+  auto entry = qModelIndexToShared<TreeItem<DeployerEntry>>(index_proxy);
+  const int event_col = index.column();
+  if(event->button() == Qt::LeftButton
+    && event_col == DeployerListModel::name_col
+    && entry->getData()->isSeparator)
+    edit(index);
+}
