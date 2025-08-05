@@ -109,6 +109,7 @@ private:
   DeployerInfo deployer_info_;
   /*! \brief Maps mod ids to the color used to display their names. */
   std::map<int, QBrush> text_colors_;
+  QStringList collectTags(std::shared_ptr<TreeItem<DeployerEntry>> item) const;
 };
 
 Q_DECLARE_METATYPE(DeployerEntry *);

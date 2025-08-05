@@ -92,14 +92,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     }
     if(col == tags_col)
     {
-      if (modinfo->isSeparator)
-        return QVariant();
-      QStringList tags;
-      for(const auto& tag : modinfo->auto_tags)
-        tags.append(tag.c_str());
-      for(const auto& tag : modinfo->manual_tags)
-        tags.append(tag.c_str());
-      tags.sort(Qt::CaseInsensitive);
+      auto tags = collectTags(entry);
       return tags.join(", ");
     }
   }
@@ -121,13 +114,7 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     return data->name.c_str();
   if(role == mod_tags_role)
   {
-    if (modinfo->isSeparator)
-      return QVariant();
-    QStringList tags;
-    for(const auto& tag : modinfo->auto_tags)
-      tags.append(tag.c_str());
-    for(const auto& tag : modinfo->manual_tags)
-      tags.append(tag.c_str());
+    QStringList tags = collectTags(entry);
     return tags;
   }
   if(role == ids_are_source_references_role)
@@ -269,3 +256,23 @@ Qt::ItemFlags DeployerListModel::flags(const QModelIndex &index) const
     flags |= Qt::ItemIsUserCheckable;
   return flags;
 }
+
+QStringList DeployerListModel::collectTags(std::shared_ptr<TreeItem<DeployerEntry>> item) const {
+  QStringList tags;
+  auto info = item->getData();
+  if (!info->isSeparator) {
+    auto modinfo = reinterpret_pointer_cast<TreeItem<DeployerModInfo>>(item)->getData();
+    for(const auto& tag : modinfo->auto_tags)
+      tags.push_back(tag.c_str());
+    for(const auto& tag : modinfo->manual_tags)
+      tags.push_back(tag.c_str());
+  }
+  else {
+    for (int i = 0; i < item->childCount(); ++i) {
+      tags += collectTags(item->child(i));
+    }
+  }
+  tags.sort(Qt::CaseInsensitive);
+  tags.removeDuplicates();
+  return tags;
+};
