@@ -7,7 +7,9 @@
 TableCellDelegate::TableCellDelegate(QSortFilterProxyModel* proxy, QObject* parent) :
   QStyledItemDelegate{ parent }, proxy_model_(proxy),
   parent_view_(static_cast<ModListView*>(parent))
-{}
+{
+  indentation_shift = 0-parent_view_->indentation();
+}
 
 void TableCellDelegate::paint(QPainter* painter,
                               const QStyleOptionViewItem& option,
@@ -32,6 +34,11 @@ void TableCellDelegate::paint(QPainter* painter,
     opt.backgroundBrush = option.palette.brush(
       parent_view_->hasFocus() ? QPalette::Active : QPalette::Inactive,
       QPalette::Highlight);
+  }
+  bool isLeaf = !view_index.model()->hasChildren(view_index);
+  if (isLeaf && view_index.column() == 0) {
+      // For leaf nodes, adjust checkbox position to match indented items
+      opt.rect.adjust(indentation_shift, 0, 0, 0);
   }
   opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 
@@ -65,4 +72,48 @@ void TableCellDelegate::paint(QPainter* painter,
     indicator.rect = option.rect;
     QApplication::style()->drawPrimitive(QStyle::PE_FrameFocusRect, &indicator, painter);
   }
+}
+
+bool TableCellDelegate::editorEvent(QEvent* event, QAbstractItemModel* model,
+                                   const QStyleOptionViewItem& option,
+                                   const QModelIndex& index)
+{
+    Q_ASSERT(event);
+    Q_ASSERT(model);
+
+    // make sure that the item is checkable
+    Qt::ItemFlags flags = model->flags(index);
+    if (!(flags & Qt::ItemIsUserCheckable) || !(option.state & QStyle::State_Enabled)
+        || !(flags & Qt::ItemIsEnabled))
+        return false;
+
+    // make sure that we have a check state
+    QVariant value = index.data(Qt::CheckStateRole);
+    if (!value.isValid())
+        return false;
+
+    QStyle *style = option.widget->style();
+
+    // make sure that we have the right event type
+    if ((event->type() == QEvent::MouseButtonRelease)
+        || (event->type() == QEvent::MouseButtonDblClick)
+        || (event->type() == QEvent::MouseButtonPress)) {
+        QStyleOptionViewItem viewOpt(option);
+        initStyleOption(&viewOpt, index);
+        QRect checkRect = style->subElementRect(QStyle::SE_ItemViewItemCheckIndicator,
+                                                &viewOpt, option.widget)
+                                                .adjusted(indentation_shift, 0, indentation_shift, 0);
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        if (me->button() != Qt::LeftButton || !checkRect.contains(me->pos()))
+            return false;
+        if ((event->type() == QEvent::MouseButtonPress)
+            || (event->type() == QEvent::MouseButtonDblClick))
+            return true;
+    } else {
+        return false;
+    }
+
+    Qt::CheckState state = static_cast<Qt::CheckState>(value.toInt());
+    state = (state == Qt::Checked) ? Qt::Unchecked : Qt::Checked;
+    return model->setData(index, state, Qt::CheckStateRole);
 }

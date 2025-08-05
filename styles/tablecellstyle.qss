@@ -14,4 +14,3 @@ QTreeView::item:selected {
 QTreeView::item:hover {
     background: palette(light);
 }
-

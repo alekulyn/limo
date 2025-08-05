@@ -21,10 +21,11 @@ void DeployerListView::mousePressEvent(QMouseEvent* event)
   const int event_row = index.row();
   const auto prev_index = selectionModel()->currentIndex();
   selectionModel()->clearSelection();
-  const auto selection = QItemSelection(model()->index(event_row, 0, index.parent()),
-                                        model()->index(event_row, model()->columnCount() - 1, index.parent()));
+  auto leftIndex = model()->index(event_row, 0, index.parent());
+  auto rightIndex = model()->index(event_row, model()->columnCount() - 1, index.parent());
+  const auto selection = QItemSelection(leftIndex, rightIndex);
   selectionModel()->select(selection, QItemSelectionModel::Select);
-  selectionModel()->setCurrentIndex(model()->index(event_row, 1, index.parent()),
+  selectionModel()->setCurrentIndex(model()->index(event_row, 0, index.parent()),
                                     QItemSelectionModel::NoUpdate);
   updateMouseDownRow(index);
   updateRow(prev_index);
@@ -142,6 +143,8 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
   }
   if(!sameRow(index, mouse_down_))
     updateMouseHoverRow(QModelIndex());
+  if (index.column() == 0)
+    emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole, Qt::CheckStateRole});
   QTreeView::mouseReleaseEvent(event);
 }
 

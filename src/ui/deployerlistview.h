@@ -55,7 +55,6 @@ protected:
    */
   void mouseMoveEvent(QMouseEvent* event) override;
   void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
-
 private:
   /*! \brief Toggles drag and drop support. */
   bool enable_drag_reorder_ = false;
