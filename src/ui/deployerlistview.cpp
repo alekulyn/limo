@@ -119,6 +119,8 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
         mouse_down_entry->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
         mouse_down_entry->setParent(target_parent);
         emit modMoved();
+        selectionModel()->setCurrentIndex(model()->index(position, 0, target.parent()),
+                                          QItemSelectionModel::SelectCurrent);
       }
       else if (mouse_row_region == ROW_REGION.HOTSPOT && target_entry->getData()->isSeparator)
       {
@@ -129,9 +131,9 @@ void DeployerListView::mouseReleaseEvent(QMouseEvent* event)
         mouse_down_entry->parent()->remove(std::shared_ptr<TreeItem<DeployerEntry>>());
         mouse_down_entry->setParent(target_entry);
         emit modMoved();
+        selectionModel()->setCurrentIndex(model()->index(target_entry->childCount()-1, 0, target),
+                                          QItemSelectionModel::SelectCurrent);
       }
-      // selectionModel()->setCurrentIndex(model()->index(target_idx.row(), 1, target_idx.parent()),
-      //                                   QItemSelectionModel::SelectCurrent);
       updateMouseDownRow(target);
     }
     else
