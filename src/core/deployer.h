@@ -6,8 +6,8 @@
 #pragma once
 
 #include "conflictinfo.h"
-#include "core/deployerentry.hpp"
-#include "core/treeitem.h"
+#include "deployerentry.hpp"
+#include "treeitem.h"
 #include "filechangechoices.h"
 #include "log.h"
 #include "progressnode.h"

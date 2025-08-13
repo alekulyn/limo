@@ -10,7 +10,7 @@
 #ifndef TREEITEM_T_H
 #define TREEITEM_T_H
 
-#include "core/deployerentry.hpp"
+#include "deployerentry.hpp"
 #include "treeitem.h"
 #include <utility>
 

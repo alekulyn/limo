@@ -97,7 +97,7 @@ TEST_CASE("State is saved", "[app]")
   ModdedApplication app2(DATA_DIR / "staging", "test2");
   REQUIRE_THAT(app.getDeployerNames(), Catch::Matchers::Equals(app2.getDeployerNames()));
   REQUIRE_THAT(app.getProfileNames(), Catch::Matchers::Equals(app2.getProfileNames()));
-  REQUIRE_THAT(app.getLoadorder(0), Catch::Matchers::Equals(app2.getLoadorder(0)));
+  REQUIRE_THAT(app.getLoadorder(0)->getTraversalItems(), EqualsDeployerEntryVector(app2.getLoadorder(0)->getTraversalItems()));
   auto app_tools = app.getAppInfo().tools;
   auto app2_tools = app2.getAppInfo().tools;
   REQUIRE(app_tools.size() == app2_tools.size());
@@ -115,6 +115,15 @@ TEST_CASE("State is saved", "[app]")
 
 TEST_CASE("Groups update loadorders", "[app]")
 {
+  // Arrange
+  auto expectedEntry0 = std::make_shared<DeployerModInfo>(false, "mod 0", "", 0, true);
+  auto expectedEntry1 = std::make_shared<DeployerModInfo>(false, "mod 1", "", 1, true);
+  auto expectedEntry2 = std::make_shared<DeployerModInfo>(false, "mod 2", "", 2, true);
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries0 = {expectedEntry0};
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries1 = {expectedEntry1};
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries2 = {expectedEntry2};
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries02 = {expectedEntry0, expectedEntry2};
+
   resetStagingDir();
   ModdedApplication app(DATA_DIR / "staging", "test");
   app.addDeployer({ DeployerFactory::SIMPLEDEPLOYER, "depl0", DATA_DIR / "app", Deployer::hard_link });
@@ -133,21 +142,19 @@ TEST_CASE("Groups update loadorders", "[app]")
   info.current_path = DATA_DIR / "source" / "mod1.zip";
   app.installMod(info);
   app.createGroup(1, 0);
-  REQUIRE_THAT(app.getLoadorder(0), Catch::Matchers::Equals(app.getLoadorder(1)));
-  REQUIRE_THAT(app.getLoadorder(0),
-               Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 1, true } }));
+  REQUIRE_THAT(app.getLoadorder(0)->getTraversalItems(), EqualsDeployerEntryVector(app.getLoadorder(1)->getTraversalItems()));
+  REQUIRE_THAT(app.getLoadorder(0)->getTraversalItems(), EqualsDeployerEntryVector(expectedEntries1));
   app.changeActiveGroupMember(0, 0);
-  REQUIRE_THAT(app.getLoadorder(0),
-               Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 0, true } }));
+  REQUIRE_THAT(app.getLoadorder(0)->getTraversalItems(), EqualsDeployerEntryVector(expectedEntries0));
   info.name = "mod 2";
   info.current_path = DATA_DIR / "source" / "mod2.tar.gz";
   app.installMod(info);
   REQUIRE_THAT(
-    app.getLoadorder(0),
-    Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 0, true }, { 2, true } }));
+    app.getLoadorder(0)->getTraversalItems(),
+    EqualsDeployerEntryVector(expectedEntries02));
   app.addModToGroup(2, 0);
-  REQUIRE_THAT(app.getLoadorder(0),
-               Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 2, true } }));
+  REQUIRE_THAT(app.getLoadorder(0)->getTraversalItems(),
+               EqualsDeployerEntryVector(expectedEntries2));
 }
 
 TEST_CASE("Mods are split", "[app]")
@@ -192,6 +199,15 @@ TEST_CASE("Mods are split", "[app]")
 
 TEST_CASE("Mods are uninstalled", "[app]")
 {
+  // Arrange
+  auto expectedEntry0 = std::make_shared<DeployerModInfo>(false, "mod 0", "", 0, true);
+  auto expectedEntry1 = std::make_shared<DeployerModInfo>(false, "mod 1", "", 1, true);
+  auto expectedEntry2 = std::make_shared<DeployerModInfo>(false, "mod 2", "", 2, true);
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries0 = {expectedEntry0};
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries1 = {expectedEntry1};
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries2 = {expectedEntry2};
+  std::vector<std::weak_ptr<DeployerEntry>> expectedEntries12 = {expectedEntry1, expectedEntry2};
+
   resetStagingDir();
   ModdedApplication app(DATA_DIR / "staging", "test");
   app.addDeployer({ DeployerFactory::SIMPLEDEPLOYER, "depl0", DATA_DIR / "app", Deployer::hard_link });
@@ -219,10 +235,10 @@ TEST_CASE("Mods are uninstalled", "[app]")
   REQUIRE(mod_info[0].mod.id == 1);
   REQUIRE(mod_info[0].mod.name == "mod 1");
   REQUIRE_THAT(mod_info[0].deployer_ids, Catch::Matchers::Equals(std::vector<int>{ 0, 1 }));
-  REQUIRE_THAT(app.getLoadorder(0),
-               Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 1, true } }));
-  REQUIRE_THAT(app.getLoadorder(1),
-               Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 1, true } }));
+  REQUIRE_THAT(app.getLoadorder(0)->getTraversalItems(),
+              EqualsDeployerEntryVector(expectedEntries1));
+  REQUIRE_THAT(app.getLoadorder(1)->getTraversalItems(),
+              EqualsDeployerEntryVector(expectedEntries1));
   verifyDirsAreEqual(DATA_DIR / "staging", DATA_DIR / "target" / "remove" / "simple");
 
   info.deployers = { 0 };
@@ -243,9 +259,9 @@ TEST_CASE("Mods are uninstalled", "[app]")
   REQUIRE(mod_info[1].mod.id == 2);
   REQUIRE(mod_info[1].mod.name == "mod 0");
   REQUIRE_THAT(
-    app.getLoadorder(0),
-    Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 1, true }, { 2, true } }));
-  REQUIRE_THAT(app.getLoadorder(1),
-               Catch::Matchers::Equals(std::vector<std::tuple<int, bool>>{ { 1, true } }));
+    app.getLoadorder(0)->getTraversalItems(),
+    EqualsDeployerEntryVector(expectedEntries12));
+  REQUIRE_THAT(app.getLoadorder(1)->getTraversalItems(),
+              EqualsDeployerEntryVector(expectedEntries1));
   verifyDirsAreEqual(DATA_DIR / "staging", DATA_DIR / "target" / "remove" / "version");
 }

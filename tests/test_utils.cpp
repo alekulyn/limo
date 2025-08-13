@@ -1,7 +1,5 @@
 #include "test_utils.h"
 #include <fstream>
-#include <iostream>
-
 
 std::vector<std::string> getFiles(sfs::path dir, bool get_contents = false)
 {
@@ -65,3 +63,23 @@ void verifyFilesAreEqual(sfs::path first_file, sfs::path second_file)
   file.close();
   REQUIRE(content_first_file == content_second_file);
 }
+
+bool DeployerEntryVectorMatcher::match(std::vector<std::weak_ptr<DeployerEntry>> const& actual) const {
+  if (actual.size() != m_expected.size()) return false;
+
+  for (size_t i = 0; i < actual.size(); ++i) {
+    auto a = actual[i].lock();
+    auto e = m_expected[i].lock();
+
+    if (!a || !e) return false;
+    if (*a != *e) return false; // Uses DeployerEntry's operator==
+  }
+  return true;
+}
+
+std::string DeployerEntryVectorMatcher::describe() const {
+  std::ostringstream ss;
+  ss << "contains equal DeployerEntry objects as reference vector";
+  return ss.str();
+}
+
