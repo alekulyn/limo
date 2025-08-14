@@ -699,13 +699,14 @@ void ModdedApplication::removeModFromGroup(int mod_id,
       for(int prof = 0; prof < profile_names_.size(); prof++)
       {
         deployers_[depl]->setProfile(prof);
-        auto loadorder = deployers_[depl]->getLoadorder()->getTraversalItems();
+        auto loadorder = deployers_[depl]->getLoadorder()->getTraversal();
         auto iter = str::find_if(
-          loadorder, [mod_id](const auto& entry) { return entry.lock()->id == mod_id; });
-        if(iter != loadorder.end())
+          loadorder, [mod_id](const auto& entry) { return entry.lock()->getData()->id == mod_id; });
+        if(iter != loadorder.end() && !iter->lock()->getData()->isSeparator)
         {
-          deployers_[depl]->addMod(active_group_members_[group], static_cast<DeployerModInfo *>(iter->lock().get())->enabled, false);
-          deployers_[depl]->swapChild(loadorder.size(), iter - loadorder.begin());
+          deployers_[depl]->addMod(active_group_members_[group], static_pointer_cast<DeployerModInfo>(iter->lock()->getData())->enabled, false);
+          // This swap causes a segfault
+          deployers_[depl]->swapNodes(loadorder.back().lock(), iter->lock());
           update_targets[depl].push_back(prof);
           weights.push_back(loadorder.size());
         }

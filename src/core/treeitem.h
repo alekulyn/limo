@@ -51,6 +51,7 @@ public:
   }
   std::shared_ptr<TreeItem<T>> child(int number);
   std::vector<std::weak_ptr<T>>::iterator begin() {
+    if (dirty) refresh();
     return traversalItems_cache.begin();
   }
   std::vector<std::weak_ptr<T>>::iterator end() {
@@ -64,6 +65,7 @@ public:
   }
 
   void swapChild(int from, int to);
+  void swapNodes(std::shared_ptr<TreeItem<T>> nodeA, std::shared_ptr<TreeItem<T>> nodeB);
   void refresh();
   Json::Value toJson() const;
 
@@ -78,6 +80,7 @@ private:
   int rows = -1;
 
   std::vector<std::weak_ptr<TreeItem<T>>> preOrderTraversal();
+  bool isAncestor(std::shared_ptr<TreeItem<T>> potentialAncestor);
 };
 
 #include "treeitem.t.hpp"

@@ -118,8 +118,27 @@ Json::Value TreeItem<T>::toJson() const {
 
 template <typename T>
 void TreeItem<T>::swapChild(int from, int to) {
+  if (from < 0 || to < 0 || from >= m_childItems.size() || to >= m_childItems.size() || from == to) {
+    throw std::out_of_range("Invalid indices for swapChild");
+  }
   iter_swap(m_childItems.begin() + from, m_childItems.begin() + to);
   markDirty();
+}
+
+template <typename T>
+void TreeItem<T>::swapNodes(std::shared_ptr<TreeItem<T>> nodeA, std::shared_ptr<TreeItem<T>> nodeB) {
+  if (nodeA->isAncestor(nodeB) || nodeB->isAncestor(nodeA))
+    throw std::logic_error("Cannot swap nodes that are ancestors of each other");
+  std::swap(nodeA, nodeB);
+  markDirty();
+}
+
+template <typename T>
+bool TreeItem<T>::isAncestor(std::shared_ptr<TreeItem<T>> potentialAncestor) {
+  if (this->shared_from_this() == potentialAncestor) return true;
+  else if (this->parent() != nullptr)
+    return this->parent()->isAncestor(potentialAncestor);
+  return false;
 }
 
 template <typename T>

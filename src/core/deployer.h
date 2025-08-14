@@ -116,6 +116,7 @@ public:
    * \param to_index Destination index.
    */
   virtual void swapChild(int from_index, int to_index);
+  virtual void swapNodes(std::shared_ptr<TreeItem<DeployerEntry>> nodeA, std::shared_ptr<TreeItem<DeployerEntry>> nodeB);
   /*!
    * \brief Appends a new mod to the load order.
    * \param mod_id Id of the mod to be added.
