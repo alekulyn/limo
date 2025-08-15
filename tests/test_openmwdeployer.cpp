@@ -1,5 +1,6 @@
 #include "../src/core/openmwarchivedeployer.h"
 #include "../src/core/openmwplugindeployer.h"
+#include "matcher.h"
 #include "test_utils.h"
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_vector.hpp>
