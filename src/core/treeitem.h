@@ -11,12 +11,6 @@ template <typename T>
 class TreeItem : public std::enable_shared_from_this<TreeItem<T>>
 {
 public:
-  // ~TreeItem() = default;
-  // TreeItem(const TreeItem&) = delete;
-  // TreeItem& operator=(const TreeItem&) = delete;
-  // TreeItem(TreeItem&&) noexcept = default;
-  // TreeItem& operator=(TreeItem&&) noexcept = default;
-
   TreeItem(std::shared_ptr<T> data, std::shared_ptr<TreeItem<T>> parent = nullptr);
 
   int childCount() const;

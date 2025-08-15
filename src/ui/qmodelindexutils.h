@@ -24,5 +24,4 @@ std::shared_ptr<T> qModelIndexToShared(const QModelIndex &index)
     return std::shared_ptr<T>(typedPtr, [](T*){});
 }
 
-// #include "qmodelindexutils.tcc"
 #endif // QMODELINDEXCHECK_H

@@ -120,9 +120,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
   settings.setValue("ask_remove_profile", ask_remove_profile_);
   settings.setValue("ask_remove_backup_target", ask_remove_backup_target_);
   settings.setValue("ask_remove_tool", ask_remove_tool_);
-  // settings.setValue("mod_list_sort_column",
-  //                   ui->mod_list->horizontalHeader()->sortIndicatorSection());
-  // settings.setValue("mod_list_sort_order", ui->mod_list->horizontalHeader()->sortIndicatorOrder());
   ipc_server_->shutdown();
   event->accept();
 }
@@ -1659,7 +1656,6 @@ void MainWindow::onGetDeployerNames(QStringList names, bool is_new)
 void MainWindow::onModListContextMenu(QPoint pos)
 {
   auto idx = mod_list_proxy_->mapToSource(ui->mod_list->indexAt(pos));
-  // pos.setY(pos.y() + ui->mod_list->verticalHeader()->sizeHint().height() + 6);
 
   if(idx.row() < 0)
     return;
@@ -1742,8 +1738,6 @@ void MainWindow::onDeployerListContextMenu(QPoint pos)
   if(!has_visible_actions)
     return;
   auto idx = ui->deployer_list->indexAt(pos);
-  // pos.setY(pos.y() + ui->deployer_list->horizontalHeader()->sizeHint().height());
-  // pos.setX(pos.x() + ui->deployer_list->verticalHeader()->sizeHint().width());
   if(idx.row() >= 0)
     deployer_list_menu_->exec(ui->deployer_list->mapToGlobal(pos));
 }
@@ -2885,8 +2879,8 @@ void MainWindow::onScrollLists()
 {
   ui->mod_list->scrollTo(ui->mod_list->selectionModel()->currentIndex(),
                          QAbstractItemView::PositionAtCenter);
-  // ui->deployer_list->scrollTo(ui->deployer_list->selectionModel()->currentIndex(),
-                              // QAbstractItemView::PositionAtCenter);
+  ui->deployer_list->scrollTo(ui->deployer_list->selectionModel()->currentIndex(),
+                              QAbstractItemView::PositionAtCenter);
 }
 
 void MainWindow::updateProgress(float progress)
