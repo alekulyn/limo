@@ -54,6 +54,8 @@ protected:
    * \param event The source event.
    */
   void mouseMoveEvent(QMouseEvent* event) override;
+  void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
 
 private:
   /*! \brief Toggles drag and drop support. */
@@ -65,5 +67,5 @@ signals:
    * \param Original mod row.
    * \param New mod row.
    */
-  void modMoved(int from_row, int to_row);
+  void modMoved();
 };
