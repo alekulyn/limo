@@ -12,6 +12,23 @@ DeployerListView::DeployerListView(QWidget* parent) : ModListView(parent)
   QFile styleFile(":/styles/tablecellstyle.qss");
   styleFile.open(QFile::ReadOnly | QFile::Text);
   setStyleSheet(styleFile.readAll());
+  connect(this, &DeployerListView::expanded,
+          this, &DeployerListView::onExpanded);
+  connect(this, &DeployerListView::collapsed,
+          this, &DeployerListView::onCollapsed);
+}
+
+void DeployerListView::setModel(QAbstractItemModel* model)
+{
+  // Expansion state is stored in the source model and serialized in the config, so we need to restore it on each layout change
+  connect(model, &QAbstractItemModel::layoutChanged,
+          this, [this]() {
+            QTimer *timer = new QTimer(this);
+            timer->setSingleShot(true);
+            timer->start();
+            this->expandSeparators(this->rootIndex());
+          });
+  QTreeView::setModel(model);
 }
 
 void DeployerListView::mousePressEvent(QMouseEvent* event)
@@ -177,4 +194,37 @@ void DeployerListView::mouseDoubleClickEvent(QMouseEvent* event)
     && event_col == DeployerListModel::name_col
     && entry->getData()->isSeparator)
     edit(index);
+}
+
+void DeployerListView::onExpanded(const QModelIndex &index) {
+  auto index_proxy = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+  auto entry = qModelIndexToShared<TreeItem<DeployerEntry>>(index_proxy);
+  auto data = entry->getData();
+  data->isExpanded = true;
+}
+
+void DeployerListView::onCollapsed(const QModelIndex &index) {
+  auto index_proxy = static_cast<DeployerListProxyModel*>(model())->mapToSource(index);
+  auto entry = qModelIndexToShared<TreeItem<DeployerEntry>>(index_proxy);
+  auto data = entry->getData();
+  data->isExpanded = false;
+}
+
+void DeployerListView::expandSeparators(const QModelIndex &index)
+{
+  bool shouldExpand = this->model()->data(
+    index, ModListModel::expansion_role).toBool();
+  if (shouldExpand) {
+    expand(index);
+  }
+
+  const int rowCount = model()->rowCount(index);
+  for (int row = 0; row < rowCount; ++row) {
+    const QModelIndex child = model()->index(row, 0, index);
+    if (!child.isValid())
+      break;
+    if (this->isExpanded(child))
+      continue;
+    expandSeparators(child);
+  }
 }

@@ -11,6 +11,7 @@ public:
       : isSeparator(isSeparator), name(name), id(id) {}
   bool isSeparator;
   std::string name;
+  bool isExpanded = false;
   int id;
   Json::Value toJson();
   bool operator==(const DeployerEntry& other) const;

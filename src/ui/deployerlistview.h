@@ -28,6 +28,7 @@ public:
    * \param enabled Mew state.
    */
   void setEnableDragReorder(bool enabled);
+  void setModel(QAbstractItemModel* model) override;
 
 protected:
   /*!
@@ -60,6 +61,9 @@ protected:
 private:
   /*! \brief Toggles drag and drop support. */
   bool enable_drag_reorder_ = false;
+  void onExpanded(const QModelIndex &);
+  void onCollapsed(const QModelIndex &);
+  void expandSeparators(const QModelIndex & = QModelIndex());
 
 signals:
   /*!

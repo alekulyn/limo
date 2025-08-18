@@ -9,7 +9,7 @@ Json::Value DeployerEntry::toJson()
   }
   Json::Value json_object;
   json_object["name"] = name;
-  // json_object["expanded"] = name;
+  json_object["expanded"] = isExpanded;
   return json_object;
 }
 

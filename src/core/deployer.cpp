@@ -96,7 +96,9 @@ void Deployer::setLoadorder(Json::Value entry, std::shared_ptr<TreeItem<Deployer
                             entry["status"].asBool()));
     }
     else if (entry.isMember("name")){
-      current->emplace_back(make_shared<DeployerEntry>(true, entry["name"].asString()));
+      auto data = make_shared<DeployerEntry>(true, entry["name"].asString());
+      data->isExpanded = entry["expanded"].asBool();
+      current->emplace_back(data);
       for (const auto& sub_entry : entry["children"])
       {
         setLoadorder(sub_entry, current->back());

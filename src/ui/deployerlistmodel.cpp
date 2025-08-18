@@ -132,6 +132,16 @@ QVariant DeployerListModel::data(const QModelIndex& index, int role) const
     var.setValue<std::vector<int>>(deployer_info_.valid_mod_actions[row]);
     return var;
   }
+  if (role == ModListModel::expansion_role) {
+    if (deployer_info_.supports_expandable) {
+      if (data->isSeparator) {
+      return data->isExpanded;
+      } else {
+      return false; // Non-separator items are not expandable
+      }
+    }
+    return false;
+  }
   return QVariant();
 }
 
