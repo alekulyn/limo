@@ -254,6 +254,7 @@ void ApplicationManager::updateState()
     }
   }
   settings.endArray();
+  emit downloadsDirectoryChanged(settings.value("current_app").toInt());
 }
 
 bool ApplicationManager::appIndexIsValid(int app_id, bool show_error)
@@ -346,6 +347,7 @@ void ApplicationManager::addApplication(EditApplicationInfo info)
       apps_.back().fixInvalidHardLinkDeployers();
       for(const auto& tag : info.auto_tags)
         apps_.back().addAutoTag(tag, true);
+
       updateSettings();
       emit completedOperations("Application added");
     }
@@ -1064,4 +1066,9 @@ void ApplicationManager::applyModAction(int app_id, int deployer, int action, in
 {
   if(appIndexIsValid(app_id) && deployerIndexIsValid(app_id, deployer))
     handleExceptions<&ModdedApplication::applyModAction>(app_id, deployer, action, mod_id);
+}
+
+std::string ApplicationManager::getDownloadPath(int app_id) const
+{
+  return apps_[app_id].getDownloadDir().string();
 }

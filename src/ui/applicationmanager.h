@@ -77,6 +77,15 @@ public:
    * \param progress The progress.
    */
   void sendUpdateProgress(float progress);
+  std::string getDownloadPath(int app_id) const;
+  /*!
+   * \brief Checks if given app_id is part of apps_ and optionally emits an error signal.
+   * \param app_id Target app id.
+   * \param show_error If true: Emit \ref sendError.
+   * if app id is invalid.
+   * \return True if app id is valid, else false.
+   */
+  bool appIndexIsValid(int app_id, bool show_error = true);
 
 private:
   /*!
@@ -344,14 +353,6 @@ private:
    */
   void updateState();
   /*!
-   * \brief Checks if given app_id is part of apps_ and optionally emits an error signal.
-   * \param app_id Target app id.
-   * \param show_error If true: Emit \ref sendError.
-   * if app id is invalid.
-   * \return True if app id is valid, else false.
-   */
-  bool appIndexIsValid(int app_id, bool show_error = true);
-  /*!
    * \brief Checks if given deployer id is valid for given app and optionally emits
    * an error signal.
    * \param app_id Target app id.
@@ -522,6 +523,7 @@ signals:
    * \param deploy If True: Deploy mods after checking, else: Undeploy mods.
    */
   void externalChangesHandled(int app_id, int deployer, int num_deployers, bool deploy);
+  void downloadsDirectoryChanged(int app_id);
 
 public slots:
   /*!

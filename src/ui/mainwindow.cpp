@@ -32,6 +32,7 @@
 #include <QScrollBar>
 #include <QSettings>
 #include <QToolButton>
+#include <QFileSystemModel>
 #include <QtConcurrent/QtConcurrent>
 #include <ranges>
 #include <regex>
@@ -409,6 +410,8 @@ void MainWindow::setupConnections()
           app_manager_, &ApplicationManager::addModToIgnoreList);
   connect(this, &MainWindow::applyModAction,
           app_manager_, &ApplicationManager::applyModAction);
+  connect(app_manager_, &ApplicationManager::downloadsDirectoryChanged,
+          this, &MainWindow::updateDownloadsDirectory);
 }
 // clang-format on
 
@@ -503,6 +506,12 @@ void MainWindow::setupLists()
   // ui->info_tool_list->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Fixed);
   ui->info_tool_list->setColumnWidth(0, 50);
   ui->info_tool_list->setColumnWidth(1, 50);
+
+  // downloads list
+  auto downloads_model_ = new QFileSystemModel(this);
+  auto idx = downloads_model_->setRootPath(QDir::currentPath());
+  ui->downloads_list->setModel(downloads_model_);
+  ui->downloads_list->setRootIndex(idx);
 }
 
 void MainWindow::setupMenus()
@@ -2285,6 +2294,8 @@ void MainWindow::on_app_selection_box_currentIndexChanged(int index)
   deployer_list_proxy_->removeFilter(DeployerListProxyModel::filter_tags);
   emit getDeployerNames(currentApp(), false);
   on_reset_filter_button_clicked();
+
+  updateDownloadsDirectory(index);
 }
 
 
@@ -3538,4 +3549,13 @@ void MainWindow::onModActionTriggered(int action)
                       action,
                       ui->deployer_list->currentIndex().data(ModListModel::mod_id_role).toInt());
   emit getDeployerInfo(currentApp(), currentDeployer());
+}
+
+void MainWindow::updateDownloadsDirectory(int app_id) {
+  auto path = app_manager_->getDownloadPath(app_id);
+  auto model = qobject_cast<QFileSystemModel*>(ui->downloads_list->model());
+  QString newPathStr = QString::fromStdString(path);
+  auto idx = model->setRootPath(newPathStr);
+  ui->downloads_list->setRootIndex(idx);
+  ui->downloads_list->update();
 }

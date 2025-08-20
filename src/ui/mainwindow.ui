@@ -464,23 +464,23 @@
                   <property name="selectionBehavior">
                    <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
                   </property>
+                  <property name="rootIsDecorated">
+                   <bool>true</bool>
+                  </property>
+                  <property name="uniformRowHeights">
+                   <bool>true</bool>
+                  </property>
+                  <property name="itemsExpandable">
+                   <bool>true</bool>
+                  </property>
                   <property name="sortingEnabled">
                    <bool>true</bool>
                   </property>
-                  <property name="headerHidden">
-                    <bool>false</bool>
-                  </property>
-                  <property name="rootIsDecorated">
-                    <bool>true</bool>
-                  </property>
-                  <property name="uniformRowHeights">
-                    <bool>true</bool>
-                  </property>
-                  <property name="itemsExpandable">
-                    <bool>true</bool>
-                  </property>
                   <property name="animated">
-                    <bool>true</bool>
+                   <bool>true</bool>
+                  </property>
+                  <property name="headerHidden">
+                   <bool>false</bool>
                   </property>
                  </widget>
                 </item>
@@ -1174,6 +1174,25 @@
                <bool>true</bool>
               </property>
              </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="downloads_tab">
+           <attribute name="title">
+            <string>Downloads</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_22">
+            <item row="0" column="0">
+              <widget class="QTreeView" name="downloads_list">
+                <property name="geometry">
+                <rect>
+                  <x>10</x>
+                  <y>10</y>
+                  <width>1131</width>
+                  <height>311</height>
+                </rect>
+                </property>
+              </widget>
             </item>
            </layout>
           </widget>

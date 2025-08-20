@@ -1113,6 +1113,7 @@ private slots:
    * \param action Action to be applied to the current mod.
    */
   void onModActionTriggered(int action);
+  void updateDownloadsDirectory(int app_id);
 
 signals:
   /*!
