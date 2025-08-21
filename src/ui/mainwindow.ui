@@ -1183,7 +1183,7 @@
            </attribute>
            <layout class="QGridLayout" name="gridLayout_22">
             <item row="0" column="0">
-              <widget class="QTreeView" name="downloads_list">
+              <widget class="DownloadView" name="downloads_list">
                 <property name="geometry">
                 <rect>
                   <x>10</x>
@@ -1681,6 +1681,11 @@
    <class>BackupListView</class>
    <extends>QTableView</extends>
    <header location="global">ui/backuplistview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DownloadView</class>
+   <extends>QTreeView</extends>
+   <header location="global">ui/downloadview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

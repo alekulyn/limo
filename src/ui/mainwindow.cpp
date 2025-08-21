@@ -15,6 +15,7 @@
 #include "core/cryptography.h"
 #include "core/installer.h"
 #include "deployerlistview.h"
+#include "downloadview.h"
 #include "editmanualtagsdialog.h"
 #include "enterapipwdialog.h"
 #include "modlistproxymodel.h"
@@ -36,8 +37,6 @@
 #include <QtConcurrent/QtConcurrent>
 #include <ranges>
 #include <regex>
-
-#include <iostream>
 
 namespace str = std::ranges;
 namespace stv = std::views;
@@ -412,6 +411,9 @@ void MainWindow::setupConnections()
           app_manager_, &ApplicationManager::applyModAction);
   connect(app_manager_, &ApplicationManager::downloadsDirectoryChanged,
           this, &MainWindow::updateDownloadsDirectory);
+
+  connect(ui->downloads_list, &DownloadView::modAdded,
+          this, &MainWindow::onModAdded);
 }
 // clang-format on
 
@@ -3248,6 +3250,7 @@ void MainWindow::onDownloadComplete(ImportModInfo info)
 {
   onCompletedOperations("Download complete");
   mod_import_queue_.pop();
+  // TODO: Remove because we don't want to automatically extract downloaded mods.
   info.action_type = ImportModInfo::extract;
   info.target_path = ui->info_sdir_label->text().toStdString();
   info.target_path /= temp_dir_.toStdString();

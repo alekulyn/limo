@@ -263,6 +263,7 @@ set(PROJECT_SOURCES
         src/ui/deployerlistproxymodel.h
         src/ui/deployerlistview.cpp
         src/ui/deployerlistview.h
+        src/ui/downloadview.h
         src/ui/editautotagsdialog.cpp
         src/ui/editautotagsdialog.h
         src/ui/editautotagsdialog.ui
