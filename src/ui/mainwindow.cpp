@@ -3250,12 +3250,6 @@ void MainWindow::onDownloadComplete(ImportModInfo info)
 {
   onCompletedOperations("Download complete");
   mod_import_queue_.pop();
-  // TODO: Remove because we don't want to automatically extract downloaded mods.
-  info.action_type = ImportModInfo::extract;
-  info.target_path = ui->info_sdir_label->text().toStdString();
-  info.target_path /= temp_dir_.toStdString();
-  mod_import_queue_.push(info);
-  importMod();
 }
 
 void MainWindow::onModDownloadRequested(int app_id,
