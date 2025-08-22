@@ -5,6 +5,7 @@
 #include <QFileSystemModel>
 #include <QMessageBox>
 #include <QMenu>
+#include <QSortFilterProxyModel>
 
 class DownloadView : public QTreeView
 {
@@ -32,7 +33,9 @@ protected:
   void mouseDoubleClickEvent(QMouseEvent* event) override {
     auto index = indexAt(event->pos());
     if (index.isValid()) {
-      auto filepath = static_cast<QFileSystemModel *>(model())->filePath(index);
+      auto proxy_model = static_cast<QSortFilterProxyModel*>(model());
+      auto source_model = static_cast<QFileSystemModel *>(proxy_model->sourceModel());
+      auto filepath = source_model->filePath(proxy_model->mapToSource(index));
       emit modAdded(QList<QUrl>{QUrl::fromLocalFile(filepath)});
     }
     QTreeView::mouseDoubleClickEvent(event);
@@ -45,7 +48,9 @@ protected:
     QMenu menu(this);
     QAction* deleteAction = menu.addAction("Delete");
     connect(deleteAction, &QAction::triggered, this, [this, index]() {
-      QString filepath = static_cast<QFileSystemModel *>(model())->filePath(index);
+      auto proxy_model = static_cast<QSortFilterProxyModel*>(model());
+      auto source_model = static_cast<QFileSystemModel *>(proxy_model->sourceModel());
+      QString filepath = source_model->filePath(proxy_model->mapToSource(index));
       QFile file(filepath);
       if (file.remove()) {
         // TODO: Emit a signal or update the model to reflect the deletion. Also show a disable-able confirmation message.
