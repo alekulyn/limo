@@ -10,7 +10,9 @@ class DownloadView : public QTreeView
 {
   Q_OBJECT
 public:
-  explicit DownloadView(QWidget* parent) : QTreeView(parent) {}
+  explicit DownloadView(QWidget* parent) : QTreeView(parent) {
+    setSortingEnabled(true);
+  }
 
   void setModel(QAbstractItemModel* model) override {
     QTreeView::setModel(model);

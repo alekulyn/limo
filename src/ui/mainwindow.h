@@ -247,6 +247,8 @@ private:
   DeployerListProxyModel* deployer_list_proxy_;
   /*! \brief Model used by the backup list. */
   BackupListModel* backup_list_model_;
+  /*! \brief Model used by the download list. */
+  QSortFilterProxyModel* download_list_proxy_;
   /*! \brief Used to edit the active backup in the backup list. */
   VersionBoxDelegate* backup_delegate_;
   /*! \brief Used to edit the name of backup targets. */
@@ -364,6 +366,8 @@ private:
   void filterModList();
   /*! \brief Applies current search and conflicts filters to ui->deployer_list. */
   void filterDeployerList();
+  /*! \brief Applies current search and conflicts filters to ui->download_list. */
+  void filterDownloadsList();
   /*! \brief Initializes all buttons belonging to this window. */
   void setupButtons();
   /*!

@@ -512,8 +512,10 @@ void MainWindow::setupLists()
   // downloads list
   auto downloads_model_ = new QFileSystemModel(this);
   auto idx = downloads_model_->setRootPath(QDir::currentPath());
-  ui->downloads_list->setModel(downloads_model_);
-  ui->downloads_list->setRootIndex(idx);
+  download_list_proxy_ = new QSortFilterProxyModel;
+  download_list_proxy_->setSourceModel(downloads_model_);
+  download_list_proxy_->setRecursiveFilteringEnabled(true);
+  ui->downloads_list->setModel(download_list_proxy_);
 }
 
 void MainWindow::setupMenus()
@@ -755,6 +757,18 @@ void MainWindow::filterDeployerList()
   deployer_list_proxy_->setFilterString(search_term_);
   deployer_list_proxy_->updateFilter(false);
   // deployer_list_proxy_->updateRowCountLabel();
+}
+
+void MainWindow::filterDownloadsList()
+{
+  QRegularExpression regex(search_term_, QRegularExpression::CaseInsensitiveOption);
+  if (!regex.isValid()) {
+    qWarning() << "Invalid regex:" << regex.errorString();
+    return;
+  }
+  download_list_proxy_->setFilterRegularExpression(regex);
+  download_list_proxy_->setFilterKeyColumn(0);
+  updateDownloadsDirectory(currentApp());
 }
 
 void MainWindow::setupButtons()
@@ -2507,6 +2521,7 @@ void MainWindow::on_search_field_textEdited(const QString& text)
   {
     filterModList();
     filterDeployerList();
+    filterDownloadsList();
     resizeModListColumns();
     resizeDeployerListColumns();
     emit scrollLists();
@@ -2514,6 +2529,7 @@ void MainWindow::on_search_field_textEdited(const QString& text)
   }
   filterDeployerList();
   filterModList();
+  filterDownloadsList();
 }
 
 void MainWindow::on_actionget_mod_conflicts_triggered()
@@ -3550,9 +3566,12 @@ void MainWindow::onModActionTriggered(int action)
 
 void MainWindow::updateDownloadsDirectory(int app_id) {
   auto path = app_manager_->getDownloadPath(app_id);
-  auto model = qobject_cast<QFileSystemModel*>(ui->downloads_list->model());
+  // auto model = qobject_cast<QFileSystemModel*>(ui->downloads_list->model());
+  auto proxy_model = qobject_cast<QSortFilterProxyModel*>(ui->downloads_list->model());
   QString newPathStr = QString::fromStdString(path);
-  auto idx = model->setRootPath(newPathStr);
-  ui->downloads_list->setRootIndex(idx);
+
+  auto source_model = qobject_cast<QFileSystemModel*>(proxy_model->sourceModel());
+  auto idx = source_model->setRootPath(newPathStr);
+  ui->downloads_list->setRootIndex(proxy_model->mapFromSource(idx));
   ui->downloads_list->update();
 }
