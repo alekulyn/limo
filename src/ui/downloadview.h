@@ -11,9 +11,17 @@ class DownloadView : public QTreeView
   Q_OBJECT
 public:
   explicit DownloadView(QWidget* parent) : QTreeView(parent) {}
+
+  void setModel(QAbstractItemModel* model) override {
+    QTreeView::setModel(model);
+    if (model) {
+      setColumnWidth(0, 400);
+    }
+  }
+
 signals:
   /*!
-   * \brief Signals files have been dropped into this widget.
+   * \brief Signals a download file has been clicked and should be added as a mod.
    * \param path Paths to the dropped files.
    */
   void modAdded(QList<QUrl> path);
